@@ -14,11 +14,24 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->enum('sex', ['0', '1']); // 0: Female, 1: Male
+            $table->string('contact_number', 13)->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            $table->foreignId('campus_id')->constrained('campuses')->onDelete('cascade');
+            $table->enum('role', ['0', '1', '2', '3'])->default('2'); // 0: Super Admin, 1: Admin, 2: Student, 3. Student Assistant (Opt)
+            $table->integer('code')->unique()->nullable();
+            $table->string('profile_picture')->nullable();
+
+            $table->enum('pending_registration_approval', ['0', '1'])->default('1'); // 0: No, 1: Yes
+            $table->enum('is_disabled', ['0', '1'])->default('0'); // 0: No, 1: Yes
+            $table->enum('is_deleted', ['0', '1'])->default('0'); // 0: No, 1: Yes
+            
             $table->rememberToken();
             $table->timestamps();
+            $table->timestamp('deleted_at')->nullable();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -37,9 +50,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
