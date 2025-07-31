@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('code'); // Example: "BSCS", "BSIT"
             $table->string('name'); // Example: "Bachelor of Science in Computer Science", "Bachelor of Science in Information Technology"
+            $table->unsignedBigInteger('department_id');
 
-            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade'); // Foreign key to the departments table
             $table->enum('is_deleted', ['0', '1'])->default('0'); // Soft delete flag (0: No, 1: Yes)
             $table->timestamps();
             $table->timestamp('deleted_at')->nullable()->default(null); // Soft delete timestamp

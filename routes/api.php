@@ -2,17 +2,30 @@
 
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\School\CampusController;
+use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\SuperAdminControls;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+
+
+
+// Campus Routes
+Route::get('/all-campus', [CampusController::class, 'allCampus']);
+
+
+
+// User Routes
+
+Route::get('/user', [UserController::class, 'user'])->middleware('auth:sanctum'); // Get my own data
 
 Route::post('/approve-user/id={id}', [SuperAdminControls::class, 'approveRegistration']);
 Route::post('/register', [RegistrationController::class, 'registerUser']);
 Route::get('/all-users', [UserController::class, 'allUser']);
 
 Route::post('/login', [LoginController::class, 'login']);
+
+Route::post('/upload-pfp', [ProfilePhotosController::class, 'uploadPhoto']);

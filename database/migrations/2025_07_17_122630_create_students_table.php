@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Foreign key to the user table
+            $table->unsignedBigInteger('user_id');
             $table->string('id_number')->unique(); // Unique student number
-            $table->foreignId('program_id')->nullable()->constrained('programs')->onDelete('cascade'); // Foreign key to the departments table
+            $table->unsignedBigInteger('program_id');
             $table->timestamps();
         });
     }

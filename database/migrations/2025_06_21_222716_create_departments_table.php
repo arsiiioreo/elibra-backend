@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('code'); // Unique code for the department (e.g., "CCSICT")
             $table->string('name'); // Full name of the department (e.g., "College of Computer Studies and Information Communication Technology")
-            $table->foreignId('campus_id')->constrained('campuses')->onDelete('cascade'); // Foreign key to the campuses table
-
+            $table->unsignedBigInteger('campus_id');
+            
             $table->enum('is_deleted', ['0', '1'])->default('0'); // Soft delete flag
 
             $table->timestamps();

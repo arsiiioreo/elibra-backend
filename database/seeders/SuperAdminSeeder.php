@@ -15,12 +15,6 @@ class SuperAdminSeeder extends Seeder
      */
     public function run(): void
     {
-        Campus::create([
-            'campus' => 'Echague Main Campus',
-            'abbrev' => 'ISU-E',
-            'address' => 'San Fabian, Echague, Isabela',
-        ]);
-
         User::create([
             'name' => 'Reignromar Chryzel Balico',
             'sex' => '1',
@@ -37,7 +31,7 @@ class SuperAdminSeeder extends Seeder
             'sex' => '1',
             'email' => 'eugene.g.tobias@isu.edu.ph',
             'password' => Hash::make('isuelibra2025'),
-            'role' => '0',
+            'role' => '1',
             'pending_registration_approval' => '0',
             'campus_id' => 1, 
         ]);
@@ -47,7 +41,7 @@ class SuperAdminSeeder extends Seeder
             'sex' => '0',
             'email' => 'jef.a.mamaril@isu.edu.ph',
             'password' => Hash::make('jefmamaril'),
-            'role' => '0',
+            'role' => '2',
             'pending_registration_approval' => '0',
             'campus_id' => 1, 
         ]);

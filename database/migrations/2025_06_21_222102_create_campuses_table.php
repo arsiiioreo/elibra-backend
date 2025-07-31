@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('abbrev');
             $table->string('address')->nullable();
 
+            $table->enum('is_active', ['0', '1'])->default('0'); // 0: No, 1: Yes
             $table->enum('is_deleted', ['0', '1'])->default('0'); // 0: No, 1: Yes
 
             $table->timestamps();

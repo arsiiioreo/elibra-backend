@@ -19,11 +19,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->unsignedBigInteger('campus_id');
 
-            $table->foreignId('campus_id')->constrained('campuses')->onDelete('cascade');
             $table->enum('role', ['0', '1', '2', '3'])->default('2'); // 0: Super Admin, 1: Admin, 2: Student, 3. Student Assistant (Opt)
             $table->integer('code')->unique()->nullable();
-            $table->string('profile_picture')->nullable();
+            $table->unsignedBigInteger('profile_picture')->nullable();
 
             $table->enum('pending_registration_approval', ['0', '1'])->default('1'); // 0: No, 1: Yes
             $table->enum('is_disabled', ['0', '1'])->default('0'); // 0: No, 1: Yes

@@ -10,5 +10,6 @@ class Campus extends Model
         'campus',
         'abbrev',
         'address',
+        'is-active'
     ];
 }
