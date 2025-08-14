@@ -20,6 +20,13 @@ class LoginController extends Controller
 
         $user = User::where('email', $request->user)->first();
 
+        if ($user->pending_registration_approval) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Your registration is still pending for approval, please wait until your account is approved.',
+            ], 401);
+        }
+
         if (!$user) {
             $student = Student::where('id_number', $request->user)->first();
             if ($student) {
@@ -40,40 +47,15 @@ class LoginController extends Controller
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        $userData = "";
 
-        if ($token) {
-            $accessToken = PersonalAccessToken::findToken($token);
-
-            $user = $accessToken?->tokenable;
-            if ($user->profile_picture) {
-                $path = profile_photos::where('id', $user->profile_picture)->first();
-                $user->profile_picture = asset('storage/' . $path->path);
-            }
-
-            switch ($user->role) {
-                // case '0':
-                //     # code...
-                //     break;
-                case '1': 
-                    break;
-                case '2':
-                    break;
-                default:
-                    # code...
-                    break;
-
-            }
-
-            $userData = json_decode($user);
-        }
+        $user = User::with(['campus', 'profile_photos'])->find($user->id);
 
 
         return response()->json([
             'status' => 'success',
             'message' => 'Login successful.',
             'token' => $token,
-            'user' => $userData, // <-- kasama na agad user
+            'user' => $user, 
         ], 200);
     }
 }

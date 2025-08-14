@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CampusSeeder::class,
             SuperAdminSeeder::class,
+            TestUser::class,
         ]);
     }
 }

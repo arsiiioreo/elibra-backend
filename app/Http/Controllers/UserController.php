@@ -10,34 +10,30 @@ use Laravel\Sanctum\PersonalAccessToken;
 class UserController extends Controller
 {
     public function allUser() {
-        $users = User::all();
+        $users = User::with('campus')->get();
         return response()->json($users);
     }
 
     public function user(Request $request) {
-        $token = $request->bearerToken();
-
-        $accessToken = PersonalAccessToken::findToken($token);
-        $user = $accessToken?->tokenable;
-        if ($user->profile_picture) {
-            $path = profile_photos::where('id', $user->profile_picture)->first();
-            $user->profile_picture = asset('storage/' . $path->path);
-        }
-
-        switch ($user->role) {
-            // case '0':
-            //     # code...
-            //     break;
-            case '1': 
-                break;
-            case '2':
-                break;
-            default:
-                # code...
-                break;
-
-        }
-
-        return response()->json($user);
+        $user = User::with('campus')
+            ->with('profile_photos')
+            ->find($request->user()->id);
+        
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'sex' => $user->sex,
+            'contact_number' => $user->contact_number,
+            'email' => $user->email,
+            'role' => $user->role,
+            'profile_picture' => $user->profile_picture ? asset(('storage/' . $user->profile_photos?->path)) : null,
+            'pending_registration_approval' => $user->pending_registration_approval,
+            'campus' => [
+                'id' => $user?->campus?->id,
+                'campus' => $user?->campus?->campus,
+                'abbrev' => $user?->campus?->abbrev,
+                'address' => $user?->campus?->address,
+            ],
+        ]);
     }
 }

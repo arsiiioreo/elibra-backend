@@ -37,6 +37,10 @@ class User extends Authenticatable
         return $this->hasOne(Student::class, 'user_id');
     }
 
+    public function campus() {
+        return $this->belongsTo(Campus::class, 'campus_id', 'id');
+    }
+
     public function profile_photos() {
         return $this->belongsTo(profile_photos::class, 'profile_picture', 'id');
     }
