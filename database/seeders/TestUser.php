@@ -15,22 +15,93 @@ class TestUser extends Seeder
      */
     public function run(): void
     {
-        for ($i = 0; $i < 3000; $i++) {
-            $firstName = fake()->firstName();
-            $middleInitial = strtoupper(Str::random(1));
-            $lastName = fake()->lastName();
+        User::create([
+            'name' => 'Betsie M. Dela Cruz',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
 
-            $fullName = "$firstName $middleInitial. $lastName";
+        User::create([
+            'name' => 'Merelisa R. Concordia',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
 
-            User::create([
-                'name' => $fullName,
-                'sex' => (string) rand(0, 1),
-                'email' => strtolower("$firstName.$middleInitial.$lastName") . '@isu.edu.ph',
-                'password' => Hash::make('testuser'),
-                'role' => (string) rand(1, 2),
-                'pending_registration_approval' => (string) rand(0,1),
-                'campus_id' => (string) rand(1, 6),
-            ]);
-        }
+        User::create([
+            'name' => 'Aileen J. Lagmay',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
+
+        User::create([
+            'name' => 'Juliet D. Villanueva',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
+
+        User::create([
+            'name' => 'Hyacinth A. Villanueva',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
+
+        User::create([
+            'name' => 'Chrisitian L. Fermin',
+            'sex' => '0',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
+
+        User::create([
+            'name' => 'Lorna B. Layugan',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
+
+        User::create([
+            'name' => 'Lady B. Malab',
+            'sex' => '1',
+            'email' => null,
+            'contact_number' => null,
+            'password' => Hash::make('isuelibra2025'),
+            'role' => '1',
+            'pending_registration_approval' => '0',
+            'campus_id' => null, 
+        ]);
     }
 }
+            

@@ -20,7 +20,7 @@ class LoginController extends Controller
 
         $user = User::where('email', $request->user)->first();
 
-        if ($user->pending_registration_approval) {
+        if ($user->pending_registration_approval == '1') {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Your registration is still pending for approval, please wait until your account is approved.',
@@ -55,7 +55,7 @@ class LoginController extends Controller
             'status' => 'success',
             'message' => 'Login successful.',
             'token' => $token,
-            'user' => $user, 
+            'redirect' => $user->role,
         ], 200);
     }
 }

@@ -13,8 +13,6 @@ return new class extends Migration
             $table->string('code'); // Unique code for the department (e.g., "CCSICT")
             $table->string('name'); // Full name of the department (e.g., "College of Computer Studies and Information Communication Technology")
             $table->unsignedBigInteger('campus_id');
-            
-            $table->enum('is_deleted', ['0', '1'])->default('0'); // Soft delete flag
 
             $table->timestamps();
             $table->timestamp('deleted_at')->nullable()->default(null); // Soft delete timestamp

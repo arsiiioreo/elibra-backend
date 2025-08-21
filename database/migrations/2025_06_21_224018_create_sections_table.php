@@ -1,0 +1,30 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('sections', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->nullable(); // The name of the section
+            $table->unsignedBigInteger('campus_id')->nullable(); // The campus where the section is located
+            $table->timestamps();
+            $table->timestamp('deleted_at')->nullable(); // Soft delete timestamp
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('sections');
+    }
+};

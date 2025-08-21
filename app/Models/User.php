@@ -33,8 +33,8 @@ class User extends Authenticatable
         ];
     }
 
-    public function student() {
-        return $this->hasOne(Student::class, 'user_id');
+    public function patron() {
+        return $this->hasOne(Patron::class, 'user_id');
     }
 
     public function campus() {

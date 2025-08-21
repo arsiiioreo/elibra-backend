@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Campus;
+use App\Models\Sections;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -53,5 +54,14 @@ class CampusSeeder extends Seeder
             'is_active' => '0'
         ]);
         
+        Sections::create([
+            'name' => 'Serials',
+            'campus_id' => '1',
+        ]);
+        
+        Sections::create([
+            'name' => 'Thesis',
+            'campus_id' => '1',
+        ]);
     }
 }

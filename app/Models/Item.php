@@ -4,21 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Item extends Model
 {
     protected $fillable = [
-        'code',
-        'name',
+        'title',
+        'author',
+        'publisher',
+        'date_published',
+        'call_number',
+        'type',
         'campus_id',
+        'desciption',
+        'condemned_at',
     ];
 
     public function campus()
     {
         return $this->belongsTo(Campus::class);
-    }
-
-    public function programs()
-    {
-        return $this->hasMany(Program::class);
     }
 }

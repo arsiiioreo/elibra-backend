@@ -4,10 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Section extends Model
 {
     protected $fillable = [
-        'code',
         'name',
         'campus_id',
     ];
@@ -15,10 +14,5 @@ class Department extends Model
     public function campus()
     {
         return $this->belongsTo(Campus::class);
-    }
-
-    public function programs()
-    {
-        return $this->hasMany(Program::class);
     }
 }

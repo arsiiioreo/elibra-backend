@@ -16,34 +16,14 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'Reignromar Chryzel Balico',
-            'sex' => '1',
+            'name' => 'ISU Library Administrator',
+            'sex' => '0',
             'email' => 'reignromarchryzel.balico@isu.edu.ph',
-            'contact_number' => '09560964897',
+            'contact_number' => '',
             'password' => Hash::make('isuelibra2025'),
             'role' => '0',
             'pending_registration_approval' => '0',
-            'campus_id' => 1, 
-        ]);
-
-        User::create([
-            'name' => 'Eugene G. Tobias',
-            'sex' => '1',
-            'email' => 'eugene.g.tobias@isu.edu.ph',
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => 1, 
-        ]);
-
-        User::create([
-            'name' => 'Princess Jef A. Mamaril',
-            'sex' => '0',
-            'email' => 'jef.a.mamaril@isu.edu.ph',
-            'password' => Hash::make('jefmamaril'),
-            'role' => '2',
-            'pending_registration_approval' => '0',
-            'campus_id' => 1, 
+            'campus_id' => null, 
         ]);
     }
 }
