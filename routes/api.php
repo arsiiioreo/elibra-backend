@@ -11,6 +11,14 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Fetching my own user data
+Route::middleware(['jwt.auth'])->group(function () {
+    Route::get('/user', [UserController::class, 'user']);
+});
+
+
+
+
 
 // Campus Routes
 Route::get('/all-campus', [CampusController::class, 'allCampus']);
@@ -22,7 +30,6 @@ Route::post('/updateCampus', [CampusController::class, 'updateCampus']);
 
 // User Routes
 
-Route::get('/user', [UserController::class, 'user'])->middleware('auth:sanctum'); // Get my own data
 
 Route::get('/all-users', [UserController::class, 'allUser']);
 Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
