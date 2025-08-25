@@ -15,24 +15,23 @@ class UserController extends Controller
     }
 
     public function user(Request $request) {
-        $user = User::with('campus')
-            ->with('profile_photos')
+        $user = User::with(['campus', 'profile_photos'])
             ->find($request->user()->id);
         
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
-            'sex' => $user->sex,
-            'contact_number' => $user->contact_number,
-            'email' => $user->email,
+            // 'sex' => $user->sex,
+            // 'contact_number' => $user->contact_number,
+            // 'email' => $user->email,
             'role' => $user->role,
             'profile_picture' => $user->profile_picture ? asset(('storage/' . $user->profile_photos?->path)) : null,
             'pending_registration_approval' => $user->pending_registration_approval,
             'campus' => [
                 'id' => $user?->campus?->id,
                 'campus' => $user?->campus?->campus,
-                'abbrev' => $user?->campus?->abbrev,
-                'address' => $user?->campus?->address,
+                // 'abbrev' => $user?->campus?->abbrev,
+                // 'address' => $user?->campus?->address,
             ],
         ]);
     }
