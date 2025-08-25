@@ -18,7 +18,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Betsie M. Dela Cruz',
             'sex' => '1',
-            'email' => null,
+            'email' => 'betsie.m.dela-cruz@isu.edu.ph',
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -29,7 +29,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Merelisa R. Concordia',
             'sex' => '1',
-            'email' => null,
+            'email' => "merelisa.r.concordia@isu.edu.ph",
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -40,7 +40,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Aileen J. Lagmay',
             'sex' => '1',
-            'email' => null,
+            'email' => "aileen.j.lagmay@isu.edu.ph",
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -51,7 +51,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Juliet D. Villanueva',
             'sex' => '1',
-            'email' => null,
+            'email' => "juliet.d.villanueva@isu.edu.ph",
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -62,7 +62,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Hyacinth A. Villanueva',
             'sex' => '1',
-            'email' => null,
+            'email' => 'hyacinth.a.villanueva@isu.edu.ph',
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -73,7 +73,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Chrisitian L. Fermin',
             'sex' => '0',
-            'email' => null,
+            'email' => 'christian.l.fermin@isu.edu.ph',
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -84,7 +84,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Lorna B. Layugan',
             'sex' => '1',
-            'email' => null,
+            'email' => "lorna.b.layugan@isu.edu.ph",
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
@@ -95,7 +95,7 @@ class TestUser extends Seeder
         User::create([
             'name' => 'Lady B. Malab',
             'sex' => '1',
-            'email' => null,
+            'email' => "lady.b.malab@isu.edu.ph",
             'contact_number' => null,
             'password' => Hash::make('isuelibra2025'),
             'role' => '1',
