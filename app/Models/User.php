@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -28,11 +30,10 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    protected $guarded = [];
+
     protected $fillable = [
-        'name',
-        'sex',
-        'email',
-        'password',
+        'name', 'email', 'password', 'role'
     ];
 
     protected $hidden = [

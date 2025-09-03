@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\Validator;
 
 class CampusController extends Controller
 {
-    public function allCampus() {
-        $campuses = Campus::all();
+    public function all() {
+        $campuses = Campus::all()->where('deleted_at', null);
 
         return response()->json($campuses);
     }
 
-    public function addCampus(Request $request) {
+    public function add(Request $request) {
         $data = Validator::make($request->all(), [
             'abbrev' => 'required',
             'name' => 'required',
@@ -41,29 +41,7 @@ class CampusController extends Controller
         }
     }
 
-    public function changeCampusStatus(Request $request) {
-        $data = Validator::make($request->all(), [
-            'id' => 'required',
-            'status' => 'required'
-        ]);
-
-        if ($data->fails()) {
-            return response()->json(['status' => 'error', 'message' => 'An error occured, please check your inputs and try again.']);
-        }
-        
-        $campus = Campus::find($request->id);
-        
-        if (!$campus) {
-            return response()->json(['status' => 'error', 'message' => 'Campus not found.']);
-        }
-        
-        $campus->is_active = $request->status;
-        $campus->save();
-        
-        return response()->json(['status' => 'success', 'message' => 'Campus status updated successfully.']);
-    }
-
-    public function updateCampus(Request $request) {
+    public function update(Request $request) {
         $data = Validator::make($request->all(), [
             'id' => 'required',
             'abbrev' => 'required',
@@ -84,8 +62,49 @@ class CampusController extends Controller
         $campus->abbrev = $request->abbrev ?? $campus->abbrev;
         $campus->campus = $request->name ?? $campus->name;
         $campus->address = $request->address ?? $campus->address;
+        $campus->is_active = $request->status ?? $campus->is_active;
         $campus->save();
         
-        return response()->json(['status' => 'success', 'message' => 'Campus status updated successfully.']);
+        return response()->json(['status' => 'success', 'message' => 'Campus updated successfully.']);
+    }
+
+    public function delete(Request $request) {
+        $data = Validator::make($request->all(), [
+            'id' => 'required',
+        ]);
+
+        if ($data->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'An error occured, please check your inputs and try again.']);
+        }
+        
+        $campus = Campus::find($request->id);
+        
+        if (!$campus) {
+            return response()->json(['status' => 'error', 'message' => 'Campus not found.']);
+        }
+        
+        $campus->deleted_at = now();
+        
+        return response()->json(['status' => 'success', 'message' => 'Campus deleted successfully.']);
+    }
+
+    public function deleteCampus(Request $request) {
+        $data = Validator::make($request->all(), [
+            'id' => 'required',
+        ]);
+
+        if ($data->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'An error occured, please check your inputs and try again.']);
+        }
+        
+        $campus = Campus::find($request->id);
+        
+        if (!$campus) {
+            return response()->json(['status' => 'error', 'message' => 'Campus not found.']);
+        }
+        
+        $campus->delete();
+        
+        return response()->json(['status' => 'success', 'message' => 'Campus deleted successfully.']);
     }
 }
