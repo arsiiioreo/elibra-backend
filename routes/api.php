@@ -3,12 +3,15 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\OTPVerifier;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\School\CampusController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\SuperAdminControls;
 use App\Http\Controllers\UserController;
+use App\Mail\EmailVerification;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
@@ -31,6 +34,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 // Authentication Routes
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('/auth/verify-email', [OTPVerifier::class, 'verifyEmail'])->middleware('jwt.auth');
+
 
 
 

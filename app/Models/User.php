@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use HasFactory, Notifiable, HasApiTokens;
 
@@ -25,6 +25,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return [
             'id'    => $this->id,
+            'name' => $this->name,
             'email' => $this->email,
             'role'  => $this->role,
         ];
