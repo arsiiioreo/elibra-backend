@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\RegistrationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OTPVerifier;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\ItemsController;
 use App\Http\Controllers\School\CampusController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
@@ -15,11 +17,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
-    // a - admin    p - patron
-    // c - campus   d - department
-    // co - course  s - subject
-    // u - user     r - role
-    // ur - user role
+// a - admin    p - patron
+// c - campus   d - department
+// co - course  s - subject
+// u - user     r - role
+// ur - user role
 
 
 
@@ -34,42 +36,53 @@ Route::middleware(['jwt.auth'])->group(function () {
 // Authentication Routes
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+Route::post('auth/refresh', [AuthController::class, 'refresh']);
 Route::post('/auth/verify-email', [OTPVerifier::class, 'verifyEmail'])->middleware('jwt.auth');
 
 
 
 
+// Admin Routes
+Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
+    // Campus Routes
+    Route::get('/all-c', [CampusController::class, 'all']);
+    Route::post('/addCampus', [CampusController::class, 'add']);
+    Route::post('/updateCampus', [CampusController::class, 'update']);
+    Route::post('/deleteCampus', [CampusController::class, 'delete']);
+
+    // Department Routes
+    Route::get('/all-d', [DepartmentController::class, 'all']);
+    Route::post('/addDepartment', [DepartmentController::class, 'add']);
+    Route::post('/updateDepartment', [DepartmentController::class, 'update']);
+    Route::post('/deleteDepartment', [DepartmentController::class, 'delete']);
+
+    // Program Routes
+    Route::get('/all-p', [ProgramController::class, 'all']);
+    Route::post('/addProgram', [ProgramController::class, 'add']);
+    Route::post('/updateProgram', [ProgramController::class, 'update']);
+    Route::post('/deleteProgram', [ProgramController::class, 'delete']);
+
+    // User Routes
+    Route::get('/all-users', [UserController::class, 'allUser']);
+});
 
 
-// Campus Routes
-Route::get('/all-c', [CampusController::class, 'all']);
-Route::post('/addCampus', [CampusController::class, 'add']);
-Route::post('/updateCampus', [CampusController::class, 'update']);
-Route::post('/deleteCampus', [CampusController::class, 'delete']);
 
-// Department Routes
-Route::get('/all-d', [DepartmentController::class, 'all']);
-Route::post('/addDepartment', [DepartmentController::class, 'add']);
-Route::post('/updateDepartment', [DepartmentController::class, 'update']);
-Route::post('/deleteDepartment', [DepartmentController::class, 'delete']);
+// Librarian Routes
+Route::group(['middleware' => ['jwt.auth', 'role:1']], function () {
+    Route::post('/add-item', [ItemsController::class, 'create']);
+    Route::put('/update-item/{id}', [ItemsController::class, 'update']);
+    Route::post('/delete-item', [ItemsController::class, 'destroy']);
+    Route::post('/add-copies-of-item', [AccessionController::class, 'accessioning_old']);
+});
 
-// Program Routes
-Route::get('/all-p', [ProgramController::class, 'all']);
-Route::post('/addProgram', [ProgramController::class, 'add']);
-Route::post('/updateProgram', [ProgramController::class, 'update']);
-Route::post('/deleteProgram', [ProgramController::class, 'delete']);
+
+// Admin and Librarian Routes
+Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
+    Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
+});
 
 
 
-
-
-// User Routes
-
-
-Route::get('/all-users', [UserController::class, 'allUser']);
-Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
-// Route::post('/register', [RegistrationController::class, 'registerUser']);
-
-// Route::post('/login', [LoginController::class, 'login']);
-
+// All Users Routes
 Route::post('/upload-pfp', [ProfilePhotosController::class, 'uploadPhoto']);

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('section_id');
             $table->enum('is_disabled', ['0', '1'])->default('0'); // Soft delete flag (0: No, 1: Yes)
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('is_active', ['0', '1'])->default('0'); // 0: No, 1: Yes
 
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 

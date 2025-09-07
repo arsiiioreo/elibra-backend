@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('campus_id')->nullable(); // The section to which the
             $table->string('description', 500)->nullable();
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 

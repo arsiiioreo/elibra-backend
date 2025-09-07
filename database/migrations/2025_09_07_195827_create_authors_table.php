@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sections', function (Blueprint $table) {
+        Schema::create('authors', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable(); // The name of the section
-            $table->unsignedBigInteger('campus_id')->nullable(); // The campus where the section is located
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 
@@ -25,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sections');
+        Schema::dropIfExists('authors');
     }
 };

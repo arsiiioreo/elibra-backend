@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('status', ['0', '1', '2', '3'])->default('0'); // 0: borrowed, 1: reserved, 2: returned, 3: overdue 
             $table->bigInteger('penalty_amount')->default(0);
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
     }
 

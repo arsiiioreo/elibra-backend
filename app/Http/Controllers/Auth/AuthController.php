@@ -10,9 +10,26 @@ use App\Models\Patron;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
+    public function refresh()
+    {
+        try {
+            $newToken = JWTAuth::parseToken()->refresh();
+
+            return response()->json([
+                'status'       => 'success',
+                'access_token' => $newToken,
+                'token_type'   => 'bearer',
+            ]);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token invalid or expired'], 401);
+        }
+    }  
+
     // Login
     public function login() {
         $user = User::where('email', request('user'))->first() ??

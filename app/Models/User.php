@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -14,7 +15,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, SoftDeletes;
 
     public function getJWTIdentifier()
     {
@@ -40,7 +41,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-    ];
+    ];  
+
 
     protected function casts(): array
     {
@@ -49,6 +51,22 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    // User Roles
+
+    public function isAdmin() {
+        return $this->role === '0';
+    }
+
+    public function isLibrarian() {
+        return $this->role === '1';
+    }
+
+    public function isPatron() {
+        return $this->role === '2';
+    }
+
+    // Relationships
 
     public function patron() {
         return $this->hasOne(Patron::class, 'user_id');

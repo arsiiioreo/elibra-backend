@@ -3,18 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
+    use SoftDeletes;
+    
     protected $fillable = [
         'title',
-        'author',
+        'authors',
         'publisher',
         'date_published',
         'call_number',
         'type',
         'campus_id',
-        'desciption',
+        'description',
         'condemned_at',
     ];
 

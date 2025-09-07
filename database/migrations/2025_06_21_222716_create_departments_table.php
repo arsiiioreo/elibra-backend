@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('campus_id');
 
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable()->default(null); // Soft delete timestamp
+            $table->softDeletes();
         });
     }
 

@@ -30,7 +30,7 @@ return new class extends Migration
             
             $table->rememberToken();
             $table->timestamps();
-            $table->timestamp('deleted_at')->nullable();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

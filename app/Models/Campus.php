@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Campus extends Model
 {
+    use SoftDeletes;
+    
     protected $fillable = [
         'abbrev',
         'campus',
