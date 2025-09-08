@@ -26,9 +26,11 @@ use Illuminate\Support\Facades\Route;
 
 
 
-// Fetching my own user data
+// My own user data
 Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/user', [UserController::class, 'user']);
+    Route::put('/me/update', [UserController::class, 'update']);
+    Route::delete('/me/delete', [UserController::class, 'destroy']);
 });
 
 
@@ -45,7 +47,6 @@ Route::post('/auth/verify-email', [OTPVerifier::class, 'verifyEmail'])->middlewa
 // Admin Routes
 Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
     // Campus Routes
-    Route::get('/all-c', [CampusController::class, 'all']);
     Route::post('/addCampus', [CampusController::class, 'add']);
     Route::post('/updateCampus', [CampusController::class, 'update']);
     Route::post('/deleteCampus', [CampusController::class, 'delete']);
@@ -82,7 +83,10 @@ Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
     Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
 });
 
+// Patron Routes
+
 
 
 // All Users Routes
+Route::get('/all-c', [CampusController::class, 'all']);
 Route::post('/upload-pfp', [ProfilePhotosController::class, 'uploadPhoto']);

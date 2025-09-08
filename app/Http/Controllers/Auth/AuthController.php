@@ -54,6 +54,7 @@ class AuthController extends Controller
                 'otp_code' => $otp,
                 'expires_at' => now()->addMinutes(10),
             ]);
+            
             Mail::to($user->email)->send(new EmailVerification($user, $otp));
             $token = auth('api')->login($user);
             return $this->respondWithToken($token);
@@ -63,7 +64,7 @@ class AuthController extends Controller
     }
 
     // Response with Token
-    public function respondWithToken($token) {
+    public function respondWithToken($token, $otp_id = null) {
         return response()->json([
             'status' => 'success',
             'access_token' => $token,

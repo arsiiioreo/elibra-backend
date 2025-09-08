@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserRequest;
 use App\Models\profile_photos;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -34,5 +35,25 @@ class UserController extends Controller
                 // 'address' => $user?->campus?->address,
             ],
         ]);
+    }
+
+    public function update(UserRequest $request) {
+        $user = $request->user();
+
+        $user->update($request->validated());
+
+        return response()->json([
+            'status' => 'success',
+        ]);
+    }
+
+    public function destroy()
+    {
+        $user = User::find(auth('api')->id());
+        if ($user && $user->delete()) {
+            return response()->json(['status' => 'success'], 200);
+        } else {
+            return response()->json(['status' => 'error', 'message' => 'Failed to delete item'], 500);
+        }
     }
 }
