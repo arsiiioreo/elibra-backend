@@ -15,45 +15,18 @@ class CampusSeeder extends Seeder
      */
     public function run(): void
     {
-        Campus::create([
-            'id' => 1,
-            'campus' => 'Echague Main Campus',
-            'abbrev' => 'ISU-E',
-            'address' => 'San Fabian, Echague, Isabela',
-            'is_active' => '1'
-        ]);
-        
-        Campus::create([
-            'id' => 2,
-            'campus' => 'Angadanan Campus',
-            'abbrev' => 'ISU-AC',
-            'address' => 'Centro 3, Angadanan, Isabela',
-            'is_active' => '0'
-        ]);
-        
-        Campus::create([
-            'id' => 3,
-            'campus' => 'Cabagan Campus',
-            'abbrev' => 'ISU-C',
-            'address' => 'Cabagan, Isabela',
-            'is_active' => '0'
-        ]);
-        
-        Campus::create([
-            'id' => 4,
-            'campus' => 'Cauayan Campus',
-            'abbrev' => 'ISU-CYN',
-            'address' => 'Cauayan, Isabela',
-            'is_active' => '0'
-        ]);
-        
-        Campus::create([
-            'id' => 5,
-            'campus' => 'Ilagan Campus',
-            'abbrev' => 'ISU-I',
-            'address' => 'Ilagan, Isabela',
-            'is_active' => '0'
-        ]);
+        $campuses = [
+            ['id' => 1, 'campus' => 'Guest', 'abbrev' => 'Guest', 'address' => 'Not Applicable', 'is_active' => '1'],
+            ['id' => 2, 'campus' => 'Echague Main Campus', 'abbrev' => 'ISU-E', 'address' => 'San Fabian, Echague, Isabela', 'is_active' => '1'],
+            ['id' => 3, 'campus' => 'Angadanan Campus', 'abbrev' => 'ISU-AC', 'address' => 'Centro 3, Angadanan, Isabela', 'is_active' => '0'],
+            ['id' => 4, 'campus' => 'Cabagan Campus', 'abbrev' => 'ISU-C', 'address' => 'Cabagan, Isabela', 'is_active' => '0'],
+            ['id' => 5, 'campus' => 'Cauayan Campus', 'abbrev' => 'ISU-CYN', 'address' => 'Cauayan, Isabela', 'is_active' => '0'],
+            ['id' => 6, 'campus' => 'Ilagan Campus', 'abbrev' => 'ISU-I', 'address' => 'Ilagan, Isabela', 'is_active' => '0'],
+        ];
+
+        foreach ($campuses as $campus) {
+            Campus::create($campus);
+        }
         
         Section::create([
             'name' => 'Serials',

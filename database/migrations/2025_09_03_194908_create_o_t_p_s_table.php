@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('otp_code');
+            $table->uuid('otp_token')->unique();
             $table->timestamp('expires_at');
             $table->timestamps();
         });

@@ -39,7 +39,8 @@ Route::middleware(['jwt.auth'])->group(function () {
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('auth/refresh', [AuthController::class, 'refresh']);
-Route::post('/auth/verify-email', [OTPVerifier::class, 'verifyEmail'])->middleware('jwt.auth');
+Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail'])->middleware('jwt.auth');
+Route::get('/auth/resend-otp', [OTPVerifier::class, 'resendOTP'])->middleware('jwt.auth');
 
 
 

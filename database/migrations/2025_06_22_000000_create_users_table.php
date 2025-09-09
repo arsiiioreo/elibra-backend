@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('campus_id')->nullable();
 
             $table->enum('role', ['0', '1', '2', '3'])->default('2'); // 0: Super Admin, 1: Admin, 2: Student, 3. Student Assistant (Opt)
-            $table->integer('code')->unique()->nullable();
+            $table->uuid('code')->unique()->nullable();
             $table->unsignedBigInteger('profile_picture')->nullable();
 
             $table->enum('pending_registration_approval', ['0', '1'])->default('1'); // 0: No, 1: Yes

@@ -15,93 +15,91 @@ class TestUser extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'Betsie M. Dela Cruz',
-            'sex' => '1',
-            'email' => 'betsie.m.dela-cruz@isu.edu.ph',
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
+        $users = [
+            [
+                'name' => 'Betsie M. Dela Cruz',
+                'sex' => '1',
+                'email' => 'betsie.m.dela-cruz@isu.edu.ph',
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Merelisa R. Concordia',
+                'sex' => '1',
+                'email' => "merelisa.r.concordia@isu.edu.ph",
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Aileen J. Lagmay',
+                'sex' => '1',
+                'email' => "aileen.j.lagmay@isu.edu.ph",
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Juliet D. Villanueva',
+                'sex' => '1',
+                'email' => "juliet.d.villanueva@isu.edu.ph",
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Hyacinth A. Villanueva',
+                'sex' => '1',
+                'email' => 'hyacinth.a.villanueva@isu.edu.ph',
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Chrisitian L. Fermin',
+                'sex' => '0',
+                'email' => 'christian.l.fermin@isu.edu.ph',
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Lorna B. Layugan',
+                'sex' => '1',
+                'email' => "lorna.b.layugan@isu.edu.ph",
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+            [
+                'name' => 'Lady B. Malab',
+                'sex' => '1',
+                'email' => "lady.b.malab@isu.edu.ph",
+                'contact_number' => null,
+                'password' => Hash::make('isuelibra2025'),
+                'role' => '1',
+                'pending_registration_approval' => '0',
+                'campus_id' => null,
+            ],
+        ];
 
-        User::create([
-            'name' => 'Merelisa R. Concordia',
-            'sex' => '1',
-            'email' => "merelisa.r.concordia@isu.edu.ph",
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
-
-        User::create([
-            'name' => 'Aileen J. Lagmay',
-            'sex' => '1',
-            'email' => "aileen.j.lagmay@isu.edu.ph",
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
-
-        User::create([
-            'name' => 'Juliet D. Villanueva',
-            'sex' => '1',
-            'email' => "juliet.d.villanueva@isu.edu.ph",
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
-
-        User::create([
-            'name' => 'Hyacinth A. Villanueva',
-            'sex' => '1',
-            'email' => 'hyacinth.a.villanueva@isu.edu.ph',
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
-
-        User::create([
-            'name' => 'Chrisitian L. Fermin',
-            'sex' => '0',
-            'email' => 'christian.l.fermin@isu.edu.ph',
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
-
-        User::create([
-            'name' => 'Lorna B. Layugan',
-            'sex' => '1',
-            'email' => "lorna.b.layugan@isu.edu.ph",
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
-
-        User::create([
-            'name' => 'Lady B. Malab',
-            'sex' => '1',
-            'email' => "lady.b.malab@isu.edu.ph",
-            'contact_number' => null,
-            'password' => Hash::make('isuelibra2025'),
-            'role' => '1',
-            'pending_registration_approval' => '0',
-            'campus_id' => null, 
-        ]);
+        foreach ($users as $user) {
+            User::create($user);
+        }
     }
 }
-            
