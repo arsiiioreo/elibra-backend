@@ -70,6 +70,9 @@ class AuthController extends Controller
             Patron::where('id_number', request('user'))->first()?->user;
 
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
+            if ($user && $user->pending_registration_approval) {
+                return response()->json(['status' => 'error', 'message' => "Account is pending for approval."], 403);
+            }
             $token = auth('api')->login($user);
             return $this->respondWithToken($token);
         } else {
