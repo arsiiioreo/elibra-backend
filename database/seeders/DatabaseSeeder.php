@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             CampusSeeder::class,
             SuperAdminSeeder::class,
             TestUser::class,
+            ItemSeeder::class,
         ]);
     }
 }

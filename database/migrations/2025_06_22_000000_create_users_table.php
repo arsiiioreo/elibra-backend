@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
-            $table->unsignedBigInteger('campus_id')->nullable();
 
             $table->enum('role', ['0', '1', '2', '3'])->default('2'); // 0: Super Admin, 1: Admin, 2: Student, 3. Student Assistant (Opt)
             $table->uuid('code')->unique()->nullable();

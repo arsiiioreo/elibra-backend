@@ -24,7 +24,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Merelisa R. Concordia',
@@ -34,7 +33,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Aileen J. Lagmay',
@@ -44,7 +42,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Juliet D. Villanueva',
@@ -54,7 +51,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Hyacinth A. Villanueva',
@@ -64,7 +60,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Chrisitian L. Fermin',
@@ -74,7 +69,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Lorna B. Layugan',
@@ -84,7 +78,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
             [
                 'name' => 'Lady B. Malab',
@@ -94,7 +87,6 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
-                'campus_id' => null,
             ],
         ];
 

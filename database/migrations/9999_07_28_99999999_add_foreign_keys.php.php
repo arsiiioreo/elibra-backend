@@ -37,18 +37,21 @@ return new class extends Migration
         });
 
         Schema::table('users', function (Blueprint $table) {
-            $table->foreign('campus_id')->references('id')->on('campuses')->onDelete('cascade');
-
             $table->foreign('profile_picture')
             ->references('id')
             ->on('profile_photos')
             ->onDelete('set null');
         });
 
-        Schema::table('admins', function (Blueprint $table) {
+        Schema::table('librarians', function (Blueprint $table) {
             $table->foreign('user_id')
             ->references('id')
             ->on('users')
+            ->onDelete('cascade');
+
+            $table->foreign('campus_id')
+            ->references('id')
+            ->on('campuses')
             ->onDelete('cascade');
             
             $table->foreign('section_id')
@@ -131,7 +134,7 @@ return new class extends Migration
 
             $table->foreign('issued_by')
             ->references('id')
-            ->on('admins')
+            ->on('librarians')
             ->onDelete('cascade');
         });
 
@@ -194,13 +197,13 @@ return new class extends Migration
             $table->dropForeign(['program_id']);
         });
 
-        Schema::table('admins', function (Blueprint $table) {
+        Schema::table('librarians', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
+            $table->dropForeign(['campus_id']);
             $table->dropForeign(['section_id']);
         });
 
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['campus_id']);
             $table->dropForeign(['profile_picture']);
         });
 

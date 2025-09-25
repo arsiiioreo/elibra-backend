@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('program_id')->nullable();
             $table->string('id_number')->unique()->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

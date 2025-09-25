@@ -23,7 +23,6 @@ class SuperAdminSeeder extends Seeder
             'password' => Hash::make('isuelibra2025'),
             'role' => '0',
             'pending_registration_approval' => '0',
-            'campus_id' => null, 
         ]);
     }
 }

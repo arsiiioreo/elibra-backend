@@ -72,6 +72,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->hasOne(Patron::class, 'user_id');
     }
 
+    public function librarian()
+    {
+        return $this->hasOne(Librarian::class);
+    }
+
     public function campus() {
         return $this->belongsTo(Campus::class, 'campus_id', 'id');
     }
