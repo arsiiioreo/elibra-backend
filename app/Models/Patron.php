@@ -3,25 +3,25 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Patron extends Model
 {
-    use SoftDeletes;
-    
     protected $fillable = [
         'user_id',
-        'program_id',
         'id_number',
+        'ebc',
+        'program_id',
+        'patron_type_id',
+        'external_organization',
+        'address'
     ];
 
-    public function user()
-    {
+    public function user() :BelongsTo {
         return $this->belongsTo(User::class);
     }
 
-    public function program()
-    {
-        return $this->belongsTo(Program::class);
+    public function program() :BelongsTo {
+        return $this->belongsTo(Programs::class);
     }
 }

@@ -4,20 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Department extends Model
+class Branch extends Model
 {
     use SoftDeletes;
-    
-    protected $fillables = ['name', 'abbrev', 'campus_id'];
+
+    protected $fillable = ['name', 'campus_id', 'address', 'contact_info', 'opening_hours', 'closing_hours'];
 
     public function campus() : BelongsTo {
         return $this->belongsTo(Campus::class);
-    }
-
-    public function programs() : HasMany {
-        return $this->hasMany(Programs::class);
     }
 }

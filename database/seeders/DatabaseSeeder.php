@@ -15,9 +15,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             CampusSeeder::class,
+            CategorySeeder::class,
+            DepartmentSeeder::class,
+            HolidaysSeeder::class,
+            ItemSeeder::class,
+            ItemTypeSeeder::class,
+            LanguageSeeder::class,
+            LoanModesSeeder::class,
+            PatronTypeSeeder::class,
             SuperAdminSeeder::class,
             TestUser::class,
-            ItemSeeder::class,
         ]);
     }
 }
