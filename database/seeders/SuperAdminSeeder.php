@@ -16,14 +16,15 @@ class SuperAdminSeeder extends Seeder
     public function run(): void
     {
         User::create([
-            'name' => 'ISU Library Administrator',
-            'sex' => '0',
+            'last_name' => 'Balico',
+            'middle_initial' => null,
+            'first_name' => 'Reign Romarchryzel',
+            'sex' => 'male',
             'email' => 'reignromarchryzel.balico@isu.edu.ph',
             'contact_number' => '',
             'password' => Hash::make('isuelibra2025'),
             'role' => '0',
             'pending_registration_approval' => '0',
-            'campus_id' => null, 
         ]);
     }
 }

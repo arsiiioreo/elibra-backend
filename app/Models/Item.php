@@ -3,26 +3,31 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
         'title',
-        'authors',
-        'publisher',
-        'date_published',
+        'publisher_id',
+        'year_published',
+        'isbn_issn',
+        'edition',
         'call_number',
-        'type',
-        'campus_id',
-        'description',
-        'condemned_at',
+        'item_type_id',
+        'language_id',
+        'remarks',
+        'maintext_raw',
     ];
 
-    public function campus()
-    {
-        return $this->belongsTo(Campus::class);
+    public function publication() : HasOne {
+        return $this->hasOne(Publisher::class);
+    }
+
+    public function type() : HasOne {
+        return $this->hasOne(ItemTypes::class);
     }
 }

@@ -26,7 +26,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return [
             'id'    => $this->id,
-            'name' => $this->name,
+            'last_name' => $this->last_name,
+            'first_name' => $this->first_name,
             'email' => $this->email,
             'role'  => $this->role,
         ];
@@ -35,13 +36,22 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     protected $guarded = [];
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'sex', 'campus_id'
+        'last_name',
+        'middle_initial',
+        'first_name',
+        'sex',
+        'contact',
+        'email',
+        'username',
+        'password',
+        'role',
+        'profile_picture'
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-    ];  
+    ];
 
 
     protected function casts(): array
@@ -54,29 +64,36 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 
     // User Roles
 
-    public function isAdmin() {
+    public function isAdmin()
+    {
         return $this->role === '0';
     }
 
-    public function isLibrarian() {
+    public function isLibrarian()
+    {
         return $this->role === '1';
     }
 
-    public function isPatron() {
-        return $this->role === '2';
+    public function isPatron()
+    {
+        return $this->role === '2
+        ';
     }
 
     // Relationships
 
-    public function patron() {
+    public function patron()
+    {
         return $this->hasOne(Patron::class, 'user_id');
     }
 
-    public function campus() {
+    public function campus()
+    {
         return $this->belongsTo(Campus::class, 'campus_id', 'id');
     }
 
-    public function profile_photos() {
+    public function profile_photos()
+    {
         return $this->belongsTo(profile_photos::class, 'profile_picture', 'id');
     }
 }

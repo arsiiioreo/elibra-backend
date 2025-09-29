@@ -3,29 +3,32 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Circulation extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
-        'admin_id',
-        'item_id',
+        'accession_id',
         'patron_id',
+        'loan_mode_id',
+        'borrowed_at',
+        'due_at',
+        'returned_at',
+        'processed_by',
         'status',
-        'due_date',
+        'renewal_count',
+        'fine_charged',
+        'notes',
     ];
 
-    public function user() {
-        return $this->belongsTo(User::class, 'user_id');
+    public function patron() : BelongsTo {
+        return $this->belongsTo(Patron::class);
     }
 
-    public function accession() {
-        return $this->belongsTo(Accession::class, 'accession_id');
-    }
-
-    public function admin() {
-        return $this->belongsTo(Admins::class, 'issued_by');
+    public function user() : BelongsTo {
+        return $this->belongsTo(User::class);
     }
 }
