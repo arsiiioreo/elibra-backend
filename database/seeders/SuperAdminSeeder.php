@@ -18,7 +18,7 @@ class SuperAdminSeeder extends Seeder
         User::create([
             'last_name' => 'Balico',
             'middle_initial' => null,
-            'first_name' => 'Reign Romarchryzel',
+            'first_name' => 'Reignromar Chryzel',
             'sex' => 'male',
             'email' => 'reignromarchryzel.balico@isu.edu.ph',
             'contact_number' => '',

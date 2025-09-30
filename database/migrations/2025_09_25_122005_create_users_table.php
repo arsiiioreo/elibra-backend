@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('username')->unique()->nullable();
             $table->string('password')->nullable();
 
-            $table->enum('role', ['admin', 'librarian', 'patron'])->default('patron');
+            $table->enum('role', ['0', '1', '2'])->default('2');
             $table->uuid('code')->unique()->nullable();
             $table->unsignedBigInteger('profile_picture')->nullable();
             $table->unsignedBigInteger('settings_id')->nullable();

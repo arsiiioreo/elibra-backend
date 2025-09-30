@@ -1,20 +1,11 @@
 <?php
 
-use App\Http\Controllers\AccessionController;
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Auth\RegistrationController;
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OTPVerifier;
 use App\Http\Controllers\DepartmentController;
-use App\Http\Controllers\ItemsController;
-use App\Http\Controllers\LibrariansController;
-use App\Http\Controllers\School\CampusController;
+use App\Http\Controllers\CampusController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
-use App\Http\Controllers\SuperAdminControls;
-use App\Http\Controllers\UserController;
-use App\Mail\EmailVerification;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
@@ -29,9 +20,9 @@ use Illuminate\Support\Facades\Route;
 
 // My own user data
 Route::middleware(['jwt.auth'])->group(function () {
-    Route::get('/user', [UserController::class, 'user']);
-    Route::put('/me/update', [UserController::class, 'update']);
-    Route::delete('/me/delete', [UserController::class, 'destroy']);
+    Route::get('/user', [AuthController::class, 'user']);
+    // Route::put('/me/update', [UserController::class, 'update']);
+    // Route::delete('/me/delete', [UserController::class, 'destroy']);
     Route::post('/upload-pfp', [ProfilePhotosController::class, 'uploadPhoto']);
 });
 
@@ -85,21 +76,21 @@ Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
 // Librarian Routes
 Route::group(['middleware' => ['jwt.auth', 'role:1']], function () {
     // All Librarians
-    Route::get('/all-librarians', [LibrariansController::class, 'all']);
+    // Route::get('/all-librarians', [LibrariansController::class, 'all']);
     // Item Routes
-    Route::post('/add-item', [ItemsController::class, 'create']);
-    Route::put('/update-item/{id}', [ItemsController::class, 'update']);
-    Route::post('/delete-item', [ItemsController::class, 'destroy']);
-    Route::post('/add-copies-of-item', [AccessionController::class, 'accessioning_old']);
+    // Route::post('/add-item', [ItemsController::class, 'create']);
+    // Route::put('/update-item/{id}', [ItemsController::class, 'update']);
+    // Route::post('/delete-item', [ItemsController::class, 'destroy']);
+    // Route::post('/add-copies-of-item', [AccessionController::class, 'accessioning_old']);
 });
 
 
 // Admin and Librarian Routes
 Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
     // User Routes
-    Route::get('/all-users', [UserController::class, 'allUser']);
+    // Route::get('/all-users', [UserController::class, 'allUser']);
 
-    Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
+    // Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
 });
 
 
