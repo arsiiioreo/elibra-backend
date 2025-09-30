@@ -5,11 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class profile_photos extends Model
+class ProfilePhotos extends Model
 {
     use SoftDeletes;
-
-    protected $table = "profile_pictures";
 
     protected $fillable = [
         'user_id',
@@ -20,6 +18,6 @@ class profile_photos extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class, 'user_id');    
     }
 }

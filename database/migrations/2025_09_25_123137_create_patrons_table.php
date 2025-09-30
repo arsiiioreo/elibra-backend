@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('ebc')->unique();
+            $table->string('id_number')->unique()->nullable();
             $table->unsignedBigInteger('program_id')->nullable();
             $table->unsignedBigInteger('patron_type_id');
             $table->string('external_organization')->nullable();

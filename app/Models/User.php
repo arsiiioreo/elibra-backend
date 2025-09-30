@@ -25,10 +25,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function getJWTCustomClaims()
     {
         return [
-            'id'    => $this->id,
-            'last_name' => $this->last_name,
-            'first_name' => $this->first_name,
-            'email' => $this->email,
             'role'  => $this->role,
         ];
     }
@@ -64,21 +60,21 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 
     // User Roles
 
-    public function isAdmin()
+    public function getIsAdminAttribute()
     {
         return $this->role === '0';
     }
 
-    public function isLibrarian()
+    public function getIsLibrarianAttribute()
     {
         return $this->role === '1';
     }
 
-    public function isPatron()
+    public function getIsPatronAttribute()
     {
-        return $this->role === '2
-        ';
+        return $this->role === '2';
     }
+
 
     // Relationships
 
@@ -94,6 +90,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 
     public function profile_photos()
     {
-        return $this->belongsTo(profile_photos::class, 'profile_picture', 'id');
+        return $this->belongsTo(ProfilePhotos::class, 'profile_picture', 'id');
     }
 }
