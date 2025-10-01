@@ -19,18 +19,21 @@ class UserRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
-    {
-        return [
-            'id' => 'nullable',
-            'name' => 'required|string|max:255',
-            'sex' => 'required|in:0,1', // 0: Female, 1: Male
-            'contact_number' => 'nullable|string|max:13',
-            'email' => 'required|email|unique:users,email,' . auth('api')->id(),
-            'password' => 'nullable|string|min:8',
-            'campus_id' => 'nullable|exists:campuses,id',
-            'role' => 'required|in:0,1,2,3', // 0: Admin, 1: Librarian, 2: Patron, 3: Student Assistant
-            'profile_picture' => 'nullable|exists:profile_photos,id',
-        ];
-    }
+public function rules(): array
+{
+    return [
+        'id' => 'nullable',
+        'name' => 'sometimes|string|max:255',
+        'sex' => 'sometimes|nullable|in:0,1', 
+        'contact_number' => 'sometimes|nullable|string|max:13',
+        'email' => 'sometimes|email|unique:users,email,' . auth('api')->id(),
+        'password' => 'sometimes|nullable|string|min:8',
+        'campus_id' => 'sometimes|nullable|exists:campuses,id',
+        'role' => 'sometimes|in:0,1,2,3',
+        // 'profile_picture' => 'sometimes|nullable|file|image|max:2048', -> OLD
+        'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048' //NEW
+
+    ];
+}
+
 }

@@ -73,7 +73,7 @@ class AuthController extends Controller
             if ($user && $user->pending_registration_approval) {
                 return response()->json(['status' => 'error', 'message' => "Account is pending for approval."], 403);
             }
-            $token = auth('api')->login($user);
+            $token = auth('api')->login($user); 
             return $this->respondWithToken($token);
         } else {
             return response()->json(['status' => 'error', 'message' => "Invalid Credentials."], 401);
