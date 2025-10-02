@@ -25,9 +25,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function getJWTCustomClaims()
     {
         return [
-            'id'    => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
             'role'  => $this->role,
         ];
     }
@@ -35,6 +32,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     protected $guarded = [];
 
     protected $fillable = [
+<<<<<<< HEAD
         'name', 
         'email', 
         'contact_number', 
@@ -42,13 +40,24 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'role', 
         'sex', 
         'campus_id', 
+=======
+        'last_name',
+        'middle_initial',
+        'first_name',
+        'sex',
+        'contact',
+        'email',
+        'username',
+        'password',
+        'role',
+>>>>>>> a9a92d8201d467cd5b6c948545ac643384cbd8d8
         'profile_picture'
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
-    ];  
+    ];
 
 
     protected function casts(): array
@@ -61,29 +70,36 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 
     // User Roles
 
-    public function isAdmin() {
+    public function getIsAdminAttribute()
+    {
         return $this->role === '0';
     }
 
-    public function isLibrarian() {
+    public function getIsLibrarianAttribute()
+    {
         return $this->role === '1';
     }
 
-    public function isPatron() {
+    public function getIsPatronAttribute()
+    {
         return $this->role === '2';
     }
 
+
     // Relationships
 
-    public function patron() {
+    public function patron()
+    {
         return $this->hasOne(Patron::class, 'user_id');
     }
 
-    public function campus() {
+    public function campus()
+    {
         return $this->belongsTo(Campus::class, 'campus_id', 'id');
     }
 
-    public function profile_photos() {
-        return $this->belongsTo(profile_photos::class, 'profile_picture', 'id');
+    public function profile_photos()
+    {
+        return $this->belongsTo(ProfilePhotos::class, 'profile_picture', 'id');
     }
 }

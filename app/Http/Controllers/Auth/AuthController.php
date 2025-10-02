@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\OTPController;
 use App\Http\Requests\RegistrationRequest;
 use App\Mail\EmailVerification;
-use App\Models\OTP;
 use App\Models\Patron;
 use App\Models\User;
 use Exception;
@@ -18,17 +18,57 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    public function user()
+    {
+        $auth = auth('api')->user();
+
+        // Default null values
+        $campus = null;
+        $branch = null;
+
+        if ($auth->isAdmin) {
+            $campus = ['name' => "Global"];
+            $branch = ['name' => "University Libary"];
+        } else if ($auth->isLibrarian) {
+            $campus = ['name' => "Echague Campus"];
+        }
+
+        $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('public/logo.png');
+
+        $data = [
+            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : 'N/A'),
+            'last_name' => $auth->last_name,
+            'middle_initial' => $auth->middle_initial ?? 'N/A',
+            'first_name' => $auth->first_name,
+            'sex' => $auth->sex,
+            'email' => $auth->email,
+            'email_verified_at' => $auth->email_verified_at,
+            'profile_picture' => $pfp,
+            'campus' => $campus,
+        ];
+
+        // // Conditional append
+        if ($branch) {
+            $data['branch'] = $branch;
+        }
+
+        return response()->json($data);
+    }
+
+
     public function refresh()
     {
-        try {
-            $newToken = JWTAuth::parseToken()->refresh();
+        /** @var \Tymon\JWTAuth\JWTGuard $auth */
+        $auth = auth('api');
 
+        try {
             return response()->json([
                 'status'       => 'success',
-                'access_token' => $newToken,
+                'access_token' => $auth->refresh(),
                 'token_type'   => 'bearer',
             ]);
         } catch (JWTException $e) {
+            throw $e;
             return response()->json(['error' => 'Token invalid or expired'], 401);
         }
     }
@@ -40,6 +80,7 @@ class AuthController extends Controller
 
         try {
             $user = auth('api')->user();
+            OTPController::generateOTP($user->id);
 
             if (!$user || !($user instanceof User)) {
                 return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
@@ -69,14 +110,27 @@ class AuthController extends Controller
         $user = User::where('email', request('user'))->first() ??
             Patron::where('id_number', request('user'))->first()?->user;
 
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => [
+                    'users' => 'User not found.'
+                ]
+            ], 404);
+        }
+
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
             if ($user && $user->pending_registration_approval) {
-                return response()->json(['status' => 'error', 'message' => "Account is pending for approval."], 403);
+                return response()->json(['status' => 'error', 'errors' => [
+                    'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.'
+                ]], 403);
             }
             $token = auth('api')->login($user); 
             return $this->respondWithToken($token);
         } else {
-            return response()->json(['status' => 'error', 'message' => "Invalid Credentials."], 401);
+            return response()->json(['status' => 'error', 'errors' => [
+                'users' => 'Incorrect password, please try again.'
+            ]], 401);
         }
     }
 
@@ -86,26 +140,7 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = User::create($request->only([
-                'name',
-                'sex',
-                'campus_id',
-                'role',
-                'email',
-                'password',
-            ]));
-
-            $otp = OTP::create([
-                'user_id' => $user->id,
-                'otp_code' => rand(100000, 999999),
-                'otp_token' => Str::uuid(),
-                'expires_at' => now()->addHour(),
-            ]);
-
-            $user->code = $otp->otp_token;
-            $user->save();
-
-            Mail::to($user->email)->send(new EmailVerification($user, $otp->otp_code));
+            $user = User::create($request->only(['name', 'sex', 'campus_id', 'role', 'email', 'password',]));
             $token = auth('api')->login($user);
 
             DB::commit();

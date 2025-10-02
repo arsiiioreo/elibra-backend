@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Campus extends Model
 {
     use SoftDeletes;
-    
+
     protected $fillable = [
-        'abbrev',
+        'name',
         'campus',
         'address',
+        'heading',
     ];
 
     public function departments()
@@ -23,15 +24,5 @@ class Campus extends Model
     public function users()
     {
         return $this->hasMany(User::class);
-    }
-
-    public function sections()
-    {
-        return $this->hasMany(Section::class);
-    }
-
-    public function items() 
-    {
-        return $this->hasMany(Item::class);
     }
 }
