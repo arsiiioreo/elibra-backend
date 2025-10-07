@@ -33,7 +33,7 @@ class AuthController extends Controller
             $campus = ['name' => "Echague Campus"];
         }
 
-        $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('public/logo.png');
+        $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png');
 
         $data = [
             'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : 'N/A'),

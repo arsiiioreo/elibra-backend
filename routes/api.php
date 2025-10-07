@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\OTPVerifier;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\CampusController;
+use App\Http\Controllers\ItemTypesController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +70,12 @@ Route::post('/deleteProgram', [ProgramController::class, 'delete']);
 
 // Admin Routes
 Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
+    Route::post('/item-type/add', [ItemTypesController::class, 'create']);
+    Route::get('/item-type/get', [ItemTypesController::class, 'read']);
+    Route::put('/item-type/edit', [ItemTypesController::class, 'update']);
+    Route::delete('/item-type/delete/{id}', [ItemTypesController::class, 'delete']);
+    // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
+    Route::put('/item-type/restore/{id}', [ItemTypesController::class, 'restore']);
 });
 
 

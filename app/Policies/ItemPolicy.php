@@ -29,7 +29,7 @@ class ItemPolicy
      */
     public function create(User $user): bool
     {
-        return $user->isLibrarian();
+        return $user->getIsLibrarianAttribute();
     }
 
     /**
@@ -37,7 +37,7 @@ class ItemPolicy
      */
     public function update(User $user, Item $item): bool
     {
-        return $user->isLibrarian();
+        return $user->getIsLibrarianAttribute();
     }
 
     /**
