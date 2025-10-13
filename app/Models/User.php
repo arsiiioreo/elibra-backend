@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,12 +37,12 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'middle_initial',
         'first_name',
         'sex',
-        'contact',
+        'contact_number',
         'email',
         'username',
         'password',
         'role',
-        'profile_picture'
+        'profile_picture',
     ];
 
     protected $hidden = [

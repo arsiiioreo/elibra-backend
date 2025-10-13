@@ -38,11 +38,12 @@ class AuthController extends Controller
         $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png');
 
         $data = [
-            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : 'N/A'),
+            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : ''),
             'last_name' => $auth->last_name,
             'middle_initial' => $auth->middle_initial ?? 'N/A',
             'first_name' => $auth->first_name,
             'sex' => $auth->sex,
+            'contact_number' => $auth->contact_number,
             'email' => $auth->email,
             'email_verified_at' => $auth->email_verified_at,
             'profile_picture' => $pfp,
@@ -180,9 +181,12 @@ class AuthController extends Controller
             $user_patron->save();
 
             $token = auth('api')->login($user);
+            $otp = OTPController::generateOTP($user->id);
+            Mail::to($user->email)->send(new EmailVerification($user, $otp));      
 
             DB::commit();
 
+            // return $this->respondWithToken($token);
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             DB::rollBack();

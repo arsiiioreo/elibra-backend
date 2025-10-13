@@ -21,6 +21,8 @@ class OTPController extends Controller
             'expires_at' => now()->addHour(),
         ]);
 
+        $user->code = $otp->otp_token;
+        $user->save();
 
         Mail::to($user->email)->send(new EmailVerification($user, $otp->otp_code));
         return $otp;

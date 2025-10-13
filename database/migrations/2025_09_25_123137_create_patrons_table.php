@@ -23,9 +23,15 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->dateTime('date_joined')->default(now());
             $table->dateTime('date_expiry')->nullable();
+<<<<<<< HEAD
+            $table->enum('status', ['active', 'suspended', 'expired']);
+            $table->string('remarks');
+            $table->softDeletes();
+=======
             // $table->enum('status', ['active', 'suspended', 'expired']);
             $table->string('remarks')->nullable();
             $table->timestamps();
+>>>>>>> 93ded4fd361132797b413c823822f4129278ed34
         });
     }
 
