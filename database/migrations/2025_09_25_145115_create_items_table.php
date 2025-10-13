@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('call_number');
             $table->unsignedBigInteger('item_type_id');
             $table->unsignedBigInteger('language_id');
-            $table->string('remarks');
+            $table->string('remarks')->nullable();
             $table->json('maintext_raw')->nullable();
             $table->timestamps();
             $table->softDeletes();

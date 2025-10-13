@@ -25,6 +25,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '0'
             ],
             [
                 'last_name' => 'Concordia',
@@ -36,6 +37,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '0'
             ],
             [
                 'last_name' => 'Lagmay',
@@ -47,6 +49,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '0'
             ],
             [
                 'last_name' => 'Villanueva',
@@ -58,6 +61,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '1'
             ],
             [
                 'last_name' => 'Villanueva',
@@ -69,6 +73,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '1'
             ],
             [
                 'last_name' => 'Fermin',
@@ -80,6 +85,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '1'
             ],
             [
                 'last_name' => 'Layugan',
@@ -91,6 +97,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '1'
             ],
             [
                 'last_name' => 'Malab',
@@ -102,6 +109,7 @@ class TestUser extends Seeder
                 'password' => Hash::make('isuelibra2025'),
                 'role' => '1',
                 'pending_registration_approval' => '0',
+                'status' => '2'
             ],
         ];
 

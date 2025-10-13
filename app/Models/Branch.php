@@ -10,7 +10,7 @@ class Branch extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'campus_id', 'address', 'contact_info', 'opening_hours', 'closing_hours'];
+    protected $fillable = ['name', 'campus_id', 'department_id', 'address', 'contact_info', 'opening_hour', 'closing_hour'];
 
     public function campus() : BelongsTo {
         return $this->belongsTo(Campus::class);

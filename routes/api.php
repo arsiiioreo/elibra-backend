@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\OTPVerifier;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\CampusController;
 use App\Http\Controllers\ItemTypesController;
+use App\Http\Controllers\PatronTypesController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
@@ -59,8 +62,16 @@ Route::post('/addProgram', [ProgramController::class, 'add']);
 Route::post('/updateProgram', [ProgramController::class, 'update']);
 Route::post('/deleteProgram', [ProgramController::class, 'delete']);
 
+// Branches Routes
+Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], function () {
+    Route::get('/read/{campus_id}', [BranchController::class, 'all']);
+    Route::post('/create', [BranchController::class, 'add']);
+    Route::post('/update', [BranchController::class, 'update']);
+    Route::post('/delete', [BranchController::class, 'delete']);
+}); 
 
-
+// Patron Types
+Route::get('/patron-types', [PatronTypesController::class, 'index']);
 
 
 
@@ -74,8 +85,13 @@ Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
     Route::get('/item-type/get', [ItemTypesController::class, 'read']);
     Route::put('/item-type/edit', [ItemTypesController::class, 'update']);
     Route::delete('/item-type/delete/{id}', [ItemTypesController::class, 'delete']);
-    // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
     Route::put('/item-type/restore/{id}', [ItemTypesController::class, 'restore']);
+    // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
+
+    Route::group(['prefix' => '/a'], function () {
+        Route::get('/users',[UserController::class, 'index'] );
+        
+    });
 });
 
 

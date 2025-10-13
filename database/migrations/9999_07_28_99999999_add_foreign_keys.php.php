@@ -27,6 +27,11 @@ return new class extends Migration
                 ->references('id')
                 ->on('campuses')
                 ->onDelete('cascade');
+
+            $table->foreign('department_id')
+                ->references('id')
+                ->on('departments')
+                ->onDelete('cascade');
         });
 
         Schema::table('users', function (Blueprint $table) {
@@ -50,6 +55,11 @@ return new class extends Migration
             $table->foreign('program_id')
                 ->references('id')
                 ->on('programs')
+                ->onDelete('cascade');
+
+            $table->foreign('campus_id')
+                ->references('id')
+                ->on('campuses')
                 ->onDelete('cascade');
 
             $table->foreign('patron_type_id')
@@ -235,6 +245,7 @@ return new class extends Migration
 
         Schema::table('branches', function (Blueprint $table) {
             $table->dropForeign(['campus_id']);
+            $table->dropForeign(['department_id']);
         });
 
         Schema::table('users', function (Blueprint $table) {
@@ -245,6 +256,7 @@ return new class extends Migration
         Schema::table('patrons', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
             $table->dropForeign(['program_id']);
+            $table->dropForeign(['campus_id']);
             $table->dropForeign(['patron_type_id']);
         });
 
