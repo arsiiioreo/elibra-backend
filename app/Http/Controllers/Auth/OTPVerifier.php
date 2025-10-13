@@ -13,27 +13,27 @@ use Illuminate\Support\Str;
 
 class OTPVerifier extends Controller
 {
-    public static function verifyOTP($otpCode)
+    public function verifyOTP(Request $request)
     {
         $user = auth('api')->user();
 
         $otpRecord = OTP::where('user_id', $user->id)
-            ->where('otp_code', $otpCode)
-            ->where('otp_token', $user->code)
+            ->where('otp_code', $request->otp)
+            ->where('otp_token', $request->code)
             ->where('expires_at', '>', now())
             ->first();
 
-        if ($otpRecord) {
+        try {
             $otpRecord->delete(); // Invalidate the OTP after successful verification
             $user->code = null;
             $user->save();
-            return true;
-        } else {
-            return false;
+            return response()->json(['status' => 'success'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong. Please try again.'], 500);
         }
     }
 
-    public function resendOTP(Request $request)
+    public function sendOTP(Request $request)
     {
         $user = auth('api')->user();
 
@@ -69,6 +69,7 @@ class OTPVerifier extends Controller
 
             return response()->json([
                 'status' => 'success',
+                'token' => $otp->otp_token,
             ]);
         } catch (\Exception $e) {
             // Rollback the transaction in case of an error

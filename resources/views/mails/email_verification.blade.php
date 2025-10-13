@@ -51,13 +51,13 @@
                 <h1>Email Verification</h1>
             </div>
             <div class="content">
-                <p>Hey there, {{ $name }}!</p>
+                <p>Hey there, {{ ucfirst($name) }}!</p>
                 <p>Thank you for signing up. Please use the OTP below to verify your email address:</p>
                 <div class="otp">{{ $otp }}</div>
                 <p>If you did not request this, please ignore this email.</p>
             </div>
             <div class="footer">
-                <p>&copy; 2023 Your Company. All rights reserved.</p>
+                <p>&copy; 2025 ISU E-Libra. All rights pa-reserve ng upuan.</p>
             </div>
         </div>
     </body>

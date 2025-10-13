@@ -33,7 +33,7 @@ class RegistrationRequest extends FormRequest
             'role'                      => ['required', 'in:1,2'],
             'email'                     => ['required', 'email', Rule::unique('users', 'email'),],
             'password'                  => ['required', 'string', 'min:8', 'confirmed'],
-            'patron_type'               => ['required', 'string', 'exists:patron_types,id'],
+            'patron_type'               => ['required', 'exists:patron_types,id'],
         ];
     }
 }

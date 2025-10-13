@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Requests\RegistrationRequest;
 use App\Mail\EmailVerification;
+use App\Models\OTP;
 use App\Models\Patron;
 use App\Models\PatronTypes;
 use App\Models\User;
@@ -81,26 +82,32 @@ class AuthController extends Controller
 
         try {
             $user = auth('api')->user();
-            OTPController::generateOTP($user->id);
 
             if (!$user || !($user instanceof User)) {
                 return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
             }
 
-            // Delegate OTP verification to OTPVerifier
-            if (OTPVerifier::verifyOTP($request->otp)) {
+            $otpRecord = OTP::where('user_id', $user->id)
+                ->where('otp_code', $request->otp)
+                ->where('otp_token', $request->code)
+                ->where('expires_at', '>', now())
+                ->first();
+
+            if ($otpRecord) {
                 $user->email_verified_at = now();
                 $user->save();
 
-                DB::commit();
-                return response()->json(['status' => 'success'], 200);
-            }
+                $otpRecord->delete(); // Invalidate the OTP after successful verification
 
-            DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
+                DB::commit();
+
+                return response()->json(['status' => 'success'], 200);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
+            }
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong.'], 500);
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong.' . $e->getMessage()], 500);
         }
     }
 

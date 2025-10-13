@@ -42,7 +42,7 @@ class EmailVerification extends Mailable
         return new Content(
             view: 'mails.email_verification', 
             with: [
-                'name' => $this->user->name,
+                'name' => $this->user->first_name,
                 'otp' => $this->otp,
             ],
         );

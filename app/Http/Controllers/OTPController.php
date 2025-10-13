@@ -23,5 +23,6 @@ class OTPController extends Controller
 
 
         Mail::to($user->email)->send(new EmailVerification($user, $otp->otp_code));
+        return $otp;
     }
 }
