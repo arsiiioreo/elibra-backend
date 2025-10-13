@@ -26,7 +26,9 @@ class OTPVerifier extends Controller
         if ($otpRecord) {
             $otpRecord->delete(); // Invalidate the OTP after successful verification
             $user->code = null;
-            $user->save();
+            if ($user instanceof User) {
+                $user->save();
+            }
             return true;
         } else {
             return false;

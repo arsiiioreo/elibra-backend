@@ -36,11 +36,12 @@ class AuthController extends Controller
         $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png');
 
         $data = [
-            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : 'N/A'),
+            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : ''),
             'last_name' => $auth->last_name,
             'middle_initial' => $auth->middle_initial ?? 'N/A',
             'first_name' => $auth->first_name,
             'sex' => $auth->sex,
+            'contact_number' => $auth->contact_number,
             'email' => $auth->email,
             'email_verified_at' => $auth->email_verified_at,
             'profile_picture' => $pfp,
@@ -79,7 +80,7 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = auth('api')->user();
+            $user = auth('api')->user();//this
             OTPController::generateOTP($user->id);
 
             if (!$user || !($user instanceof User)) {
@@ -134,17 +135,40 @@ class AuthController extends Controller
         }
     }
 
+    // // Register OLD
+    // public function register(RegistrationRequest $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $user = User::create($request->only(['name', 'sex', 'campus_id', 'role', 'email', 'password',]));
+    //         $token = auth('api')->login($user);
+
+    //         DB::commit();
+
+    //         return $this->respondWithToken($token);
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    //     }
+    // }
+
+    // Register
     // Register
     public function register(RegistrationRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $user = User::create($request->only(['name', 'sex', 'campus_id', 'role', 'email', 'password',]));
+            $user = User::create($request->only(['last_name', 'first_name', 'sex', 'campus_id', 'role', 'email', 'password',]));
+            $data['password'] = bcrypt($request->password);
             $token = auth('api')->login($user);
+            $otp = OTPController::generateOTP($user->id);
+            Mail::to($user->email)->send(new EmailVerification($user, $otp));      
 
             DB::commit();
 
+            // return $this->respondWithToken($token);
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             DB::rollBack();

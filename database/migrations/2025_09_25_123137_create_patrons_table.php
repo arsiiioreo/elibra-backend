@@ -24,6 +24,7 @@ return new class extends Migration
             $table->dateTime('date_expiry')->nullable();
             $table->enum('status', ['active', 'suspended', 'expired']);
             $table->string('remarks');
+            $table->softDeletes();
         });
     }
 
