@@ -29,8 +29,9 @@ return new class extends Migration
             $table->unsignedBigInteger('profile_picture')->nullable();
             $table->unsignedBigInteger('settings_id')->nullable();
 
-            $table->enum('pending_registration_approval', ['0', '1'])->default('1'); // 0: No, 1: Yes
-            $table->enum('is_disabled', ['0', '1'])->default('0'); // 0: No, 1: Yes
+            $table->enum('status', ['0', '1', '2'])->default('1'); // 0: Active, 1: Suspended, 2: Expired
+            $table->enum('pending_registration_approval', ['0', '1', '2'])->default('1'); // 0: Approved, 1: Pending, 2: Rejected
+            // $table->enum('is_disabled', ['0', '1'])->default('0'); // 0: No, 1: Yes
             
             $table->rememberToken();
             $table->timestamps();

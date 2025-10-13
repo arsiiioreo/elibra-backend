@@ -23,16 +23,17 @@ class RegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'      => ['required', 'string', 'max:255'],
-            'sex'       => ['required', 'in:0,1'],
-            'campus_id' => ['required', 'exists:campuses,id'],
-            'role'      => ['required', 'in:1,2'],
-            'email'     => [
-                'required',
-                'email',
-                Rule::unique('users', 'email'),
-            ],
-            'password'  => ['required', 'string', 'min:8', 'confirmed'],
+            'last_name'                 => ['required', 'string', 'max:255'],
+            'first_name'                => ['required', 'string', 'max:255'],
+            'middle_initial'            => ['nullable', 'string', 'max:255'],
+            'sex'                       => ['required', 'in:male,female,others'],
+            'campus_id'                 => ['nullable', 'exists:campuses,id'],
+            'id_number'                 => ['nullable', 'string', 'max:50', Rule::unique('patrons', 'id_number')],
+            'external_organization'     => ['nullable', 'in:1,2'],
+            'role'                      => ['required', 'in:1,2'],
+            'email'                     => ['required', 'email', Rule::unique('users', 'email'),],
+            'password'                  => ['required', 'string', 'min:8', 'confirmed'],
+            'patron_type'               => ['required', 'string', 'exists:patron_types,id'],
         ];
     }
 }

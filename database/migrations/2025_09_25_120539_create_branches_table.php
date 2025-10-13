@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('contact_info');
+            $table->string('contact_info')->nullable();
             $table->unsignedBigInteger('campus_id');
-            $table->time('opening_hour');
-            $table->time('closing_hour');
+            $table->unsignedBigInteger('department_id')->nullable();
+            $table->time('opening_hour')->nullable();
+            $table->time('closing_hour')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

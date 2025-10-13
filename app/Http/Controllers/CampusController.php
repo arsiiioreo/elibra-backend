@@ -23,16 +23,15 @@ class CampusController extends Controller
                     });
                 }
             })
-            ->orderBy($validated['sort'], $validated['order']);
-
-        return response()->json(
-            $campuses->paginate(
+            ->orderBy($validated['sort'], $validated['order'])
+            ->paginate(
                 $validated['per_page'],
                 ['*'],
                 'page',
                 $validated['page']
-            )
-        );
+            );
+
+        return response()->json($campuses);
     }
 
     private function validateCampusParams(Request $request): array

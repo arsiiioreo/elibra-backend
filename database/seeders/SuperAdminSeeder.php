@@ -24,6 +24,7 @@ class SuperAdminSeeder extends Seeder
             'contact_number' => '',
             'password' => Hash::make('isuelibra2025'),
             'role' => '0',
+            'status' => '0',
             'pending_registration_approval' => '0',
         ]);
     }

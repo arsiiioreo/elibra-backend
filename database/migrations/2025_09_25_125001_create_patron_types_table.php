@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('can_reserve')->default(false);
             $table->integer('reservation_limit');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\OTPController;
 use App\Http\Requests\RegistrationRequest;
 use App\Mail\EmailVerification;
 use App\Models\Patron;
+use App\Models\PatronTypes;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -135,33 +136,43 @@ class AuthController extends Controller
         }
     }
 
-    // // Register OLD
-    // public function register(RegistrationRequest $request)
-    // {
-    //     DB::beginTransaction();
-
-    //     try {
-    //         $user = User::create($request->only(['name', 'sex', 'campus_id', 'role', 'email', 'password',]));
-    //         $token = auth('api')->login($user);
-
-    //         DB::commit();
-
-    //         return $this->respondWithToken($token);
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
-    //     }
-    // }
-
-    // Register
-    // Register
+    // Registration API for Patrons
     public function register(RegistrationRequest $request)
     {
         DB::beginTransaction();
 
         try {
-            $user = User::create($request->only(['last_name', 'first_name', 'sex', 'campus_id', 'role', 'email', 'password',]));
-            $data['password'] = bcrypt($request->password);
+            $user = User::create($request->only(['last_name', 'first_name', 'middle_initial', 'sex', 'role', 'email', 'password',]));
+            $user_patron = Patron::create([
+                'user_id' => $user->id,
+                'patron_type_id' => $request->patron_type,
+                'status' => 'active', // Set status to inactive for Guest patrons
+            ]);
+
+            // $request->campus is an id if the user is not a guest, if the user is a guest, it is the name of the external organization
+
+            $guestType = PatronTypes::where('name', 'Guest')->first()->id;
+
+            if ($request->patron_type == $guestType) {
+                $user_patron->external_organization = $request->campus;
+                $user_patron->ebc = sprintf(
+                    'EBC%s%s%s',
+                    Str::padLeft($user_patron->id, 3, '0'), // ensure 3-digit campus_id
+                    Str::padLeft($user->id, 5, '0'),        // ensure 5-digit user_id
+                    Str::upper(Str::random(5))              // random suffix for uniqueness
+                );
+            } else {
+                $user_patron->campus_id = $request->campus;
+                $user_patron->ebc = sprintf(
+                    'EBC%s%s%s',
+                    Str::padLeft($user_patron->campus_id, 3, '0'), // ensure 3-digit campus_id
+                    Str::padLeft($user->id, 5, '0'),        // ensure 5-digit user_id
+                    Str::upper(Str::random(5))              // random suffix for uniqueness
+                );
+                $user_patron->id_number = $request->id_number;
+            }
+            $user_patron->save();
+
             $token = auth('api')->login($user);
             $otp = OTPController::generateOTP($user->id);
             Mail::to($user->email)->send(new EmailVerification($user, $otp));      
