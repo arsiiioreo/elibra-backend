@@ -51,7 +51,7 @@ Route::post('/addCampus', [CampusController::class, 'add'])->middleware('jwt.aut
 Route::post('/updateCampus', [CampusController::class, 'update'])->middleware('jwt.auth', 'role:0,1');
 Route::post('/deleteCampus', [CampusController::class, 'delete'])->middleware('jwt.auth', 'role:0');
 
-// Department Routes
+// Department Routes    
 Route::get('/all-d', [DepartmentController::class, 'all']);
 Route::post('/addDepartment', [DepartmentController::class, 'add']);
 Route::post('/updateDepartment', [DepartmentController::class, 'update']);

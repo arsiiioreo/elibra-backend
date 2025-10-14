@@ -149,7 +149,7 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = User::create($request->only(['last_name', 'first_name', 'middle_initial', 'sex', 'role', 'email', 'password',]));
+            $user = User::create($request->only(['last_name', 'first_name', 'middle_initial', 'sex', 'role', 'email', 'password']));
             $user_patron = Patron::create([
                 'user_id' => $user->id,
                 'patron_type_id' => $request->patron_type,
@@ -161,6 +161,9 @@ class AuthController extends Controller
             $guestType = PatronTypes::where('name', 'Guest')->first()->id;
 
             if ($request->patron_type == $guestType) {
+                $user->campus_id = null;
+                $user->save();
+
                 $user_patron->external_organization = $request->campus;
                 $user_patron->ebc = sprintf(
                     'EBC%s%s%s',
@@ -169,7 +172,9 @@ class AuthController extends Controller
                     Str::upper(Str::random(5))              // random suffix for uniqueness
                 );
             } else {
-                $user_patron->campus_id = $request->campus;
+                $user->campus_id = $request->campus;
+                $user->save();
+                
                 $user_patron->ebc = sprintf(
                     'EBC%s%s%s',
                     Str::padLeft($user_patron->campus_id, 3, '0'), // ensure 3-digit campus_id

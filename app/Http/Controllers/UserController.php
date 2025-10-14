@@ -61,6 +61,9 @@ class UserController extends Controller
             ->when(isset($validated['status']) && $validated['status'] !== '', function ($q) use ($validated) {
                 $q->where('status', $validated['status']);
             })
+            ->when(isset($validated['campus_id']) && $validated['campus_id'] !== '', function ($q) use ($validated) {
+                $q->where('campus_id', $validated['campus_id']);
+            })
             ->orderBy($validated['sort'], $validated['order'])
             ->paginate(
                 $validated['entries'],
