@@ -62,7 +62,7 @@ class OTPVerifier extends Controller
             $user->save();
 
             // Send via email or SMS
-            Mail::to($user->email)->send(new EmailVerification($user, $newOtp));
+            Mail::to($user->email)->send(new EmailVerification($user, $newOtp, $otp->otp_token));
 
             // Commit the transaction
             DB::commit();
