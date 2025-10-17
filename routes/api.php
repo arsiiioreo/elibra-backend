@@ -33,12 +33,13 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 
 // Authentication Routes
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/login', [AuthController  ::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::get('auth/refresh', [AuthController::class, 'refresh']);
-Route::post('/auth/verify-email', [AuthController::class, 'verifyEmail'])->middleware('jwt.auth'); // Verifying email during registration
+Route::get('/auth/verify-email', [AuthController::class, 'verifyEmail']); // Verifying email during registration
+// Route::get('/auth/verify-email/{token}/{otp}', [AuthController::class, 'verifyEmail']); // Verifying email during registration
 Route::get('/auth/send-otp', [OTPVerifier::class, 'sendOTP'])->middleware('jwt.auth'); // Sending OTP for anything (email verification, 2FA, etc.)
-Route::post('/auth/verify-otp', [OTPVerifier::class, 'verifyOTP'])->middleware('jwt.auth');
+Route::post('/auth/verify-otp', [OTPVerifier::class, 'verifyOTP'])->middleware('jwt.auth'); // 
 
 
 

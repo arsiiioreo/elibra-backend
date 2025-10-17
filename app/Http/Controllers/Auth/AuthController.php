@@ -80,21 +80,32 @@ class AuthController extends Controller
     public function verifyEmail(Request $request)
     {
         DB::beginTransaction();
+        $validated = $request->validate([
+            'token' => 'required|string',
+            'otp' => 'required|string',
+        ]);
 
         try {
-            $user = auth('api')->user();
+            // $user = auth('api')->user();
 
-            if (!$user || !($user instanceof User)) {
-                return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
-            }
+            // if (!$user || !($user instanceof User)) {
+            //     return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
+            // }
 
-            $otpRecord = OTP::where('user_id', $user->id)
-                ->where('otp_code', $request->otp)
-                ->where('otp_token', $request->code)
+            $otpRecord = OTP::where('otp_code', $validated['otp'])
+                ->where('otp_token', $validated['token'])
                 ->where('expires_at', '>', now())
                 ->first();
 
+            // $otpRecord = OTP::where('otp_code', $otp)
+            //     ->where('otp_token', $token)
+            //     ->where('expires_at', '>', now())
+            //     ->first();
+
+                // dd(' token=' . $token . ' otp=' . $otp);
+
             if ($otpRecord) {
+                $user = User::find($otpRecord->user_id);
                 $user->email_verified_at = now();
                 $user->save();
 
@@ -102,7 +113,9 @@ class AuthController extends Controller
 
                 DB::commit();
 
-                return response()->json(['status' => 'success'], 200);
+                // return response()->json(['status' => 'success'], 200);
+
+                return redirect()->away(env('FRONTEND_URL') . '/email-verified');
             } else {
                 return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
             }
@@ -174,10 +187,10 @@ class AuthController extends Controller
             } else {
                 $user->campus_id = $request->campus;
                 $user->save();
-                
+
                 $user_patron->ebc = sprintf(
                     'EBC%s%s%s',
-                    Str::padLeft($user_patron->campus_id, 3, '0'), // ensure 3-digit campus_id
+                    Str::padLeft($user->campus_id, 3, '0'), // ensure 3-digit campus_id
                     Str::padLeft($user->id, 5, '0'),        // ensure 5-digit user_id
                     Str::upper(Str::random(5))              // random suffix for uniqueness
                 );
@@ -186,12 +199,7 @@ class AuthController extends Controller
             $user_patron->save();
 
             $token = auth('api')->login($user);
-            $otp = OTPController::generateOTP($user->id);
-            Mail::to($user->email)->send(new EmailVerification($user, $otp));      
-
             DB::commit();
-
-            // return $this->respondWithToken($token);
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             DB::rollBack();

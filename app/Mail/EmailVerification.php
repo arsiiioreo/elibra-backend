@@ -16,14 +16,16 @@ class EmailVerification extends Mailable
 
     public $user;
     public $otp;
+    public $otp_token;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($user, $otp)
+    public function __construct($user, $otp, $otp_token)
     {
         $this->user = $user;
         $this->otp = $otp;
+        $this->otp_token = $otp_token;
     }
 
     /**
@@ -44,6 +46,7 @@ class EmailVerification extends Mailable
             with: [
                 'name' => $this->user->first_name,
                 'otp' => $this->otp,
+                'otp_token' => $this->otp_token,
             ],
         );
     }

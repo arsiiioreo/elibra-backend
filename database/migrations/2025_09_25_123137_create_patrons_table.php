@@ -23,7 +23,8 @@ return new class extends Migration
             $table->dateTime('date_joined')->default(now());
             $table->dateTime('date_expiry')->nullable();
             $table->enum('status', ['active', 'suspended', 'expired']);
-            $table->string('remarks');
+            $table->string('remarks')->nullable();
+            $table->timestamps();
             $table->softDeletes();
         });
     }
