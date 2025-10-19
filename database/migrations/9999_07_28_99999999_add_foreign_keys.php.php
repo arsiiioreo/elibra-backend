@@ -40,6 +40,11 @@ return new class extends Migration
                 ->on('profile_photos')
                 ->onDelete('cascade');
 
+            $table->foreign('campus_id')
+                ->references('id')
+                ->on('campuses')
+                ->onDelete('cascade');
+
             $table->foreign('settings_id')
                 ->references('id')
                 ->on('system_settings')
@@ -55,11 +60,6 @@ return new class extends Migration
             $table->foreign('program_id')
                 ->references('id')
                 ->on('programs')
-                ->onDelete('cascade');
-
-            $table->foreign('campus_id')
-                ->references('id')
-                ->on('campuses')
                 ->onDelete('cascade');
 
             $table->foreign('patron_type_id')
@@ -250,13 +250,13 @@ return new class extends Migration
 
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['profile_picture']);
+            $table->dropForeign(['campus_id']);
             $table->dropForeign(['settings_id']);
         });
 
         Schema::table('patrons', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
             $table->dropForeign(['program_id']);
-            $table->dropForeign(['campus_id']);
             $table->dropForeign(['patron_type_id']);
         });
 

@@ -17,15 +17,15 @@ return new class extends Migration
             $table->string('ebc')->unique()->nullable();
             $table->string('id_number')->unique()->nullable();
             $table->unsignedBigInteger('program_id')->nullable();
-            $table->unsignedBigInteger('campus_id')->nullable();
             $table->unsignedBigInteger('patron_type_id');
             $table->string('external_organization')->nullable();
             $table->string('address')->nullable();
             $table->dateTime('date_joined')->default(now());
             $table->dateTime('date_expiry')->nullable();
-            // $table->enum('status', ['active', 'suspended', 'expired']);
+            $table->enum('status', ['active', 'suspended', 'expired']);
             $table->string('remarks')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
