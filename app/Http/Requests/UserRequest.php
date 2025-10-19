@@ -29,7 +29,7 @@ class UserRequest extends FormRequest
             'email' => 'required|email|unique:users,email,' . auth('api')->id(),
             'password' => 'nullable|string|min:8',
             'campus_id' => 'nullable|exists:campuses,id',
-            'role' => 'required|in:0,1,2,3', // 0: Admin, 1: Librarian, 2: Patron, 3: Student Assistant
+            'role' => 'required|in:0,1,2,3', 
             'profile_picture' => 'nullable|exists:profile_photos,id',
         ];
     }

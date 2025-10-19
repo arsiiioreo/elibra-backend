@@ -33,7 +33,16 @@ class AuthController extends Controller
             $branch = ['name' => "University Libary"];
         } else if ($auth->isLibrarian) {
             $campus = ['name' => "Echague Campus"];
+        }else if ($auth->patron && $auth->patron->campus) {
+
+        $campus = [
+            // 'id' => $auth->patron->campus->id,
+            'name' => $auth->patron->campus->name,
+            'abbrev' => $auth->patron->campus->abbrev ?? null,
+            'address' => $auth->patron->campus->address ?? null,
+        ];
         }
+     
 
         $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png');
 
@@ -48,6 +57,9 @@ class AuthController extends Controller
             'email_verified_at' => $auth->email_verified_at,
             'profile_picture' => $pfp,
             'campus' => $campus,
+            // 'id_number' => $auth->patron?->id_number,
+            'id_number' => $auth->patron?->id_number,  
+            'ebc' => $auth->patron?->ebc ?? 'N/A',
         ];
 
         // // Conditional append
@@ -162,11 +174,11 @@ class AuthController extends Controller
 
             if ($request->patron_type == $guestType) {
                 $user_patron->external_organization = $request->campus;
-                $user_patron->ebc = sprintf(
+                $user_patron->ebc = sprintf(    
                     'EBC%s%s%s',
                     Str::padLeft($user_patron->id, 3, '0'), // ensure 3-digit campus_id
-                    Str::padLeft($user->id, 5, '0'),        // ensure 5-digit user_id
-                    Str::upper(Str::random(5))              // random suffix for uniqueness
+                    Str::padLeft($user->id, 5, '0'),       // ensure 5-digit user_id
+                    Str::upper(Str::random(5))            // random suffix for uniqueness
                 );
             } else {
                 $user_patron->campus_id = $request->campus;
@@ -174,20 +186,24 @@ class AuthController extends Controller
                     'EBC%s%s%s',
                     Str::padLeft($user_patron->campus_id, 3, '0'), // ensure 3-digit campus_id
                     Str::padLeft($user->id, 5, '0'),        // ensure 5-digit user_id
-                    Str::upper(Str::random(5))              // random suffix for uniqueness
+                    Str::upper(Str::random(5))             // random suffix for uniqueness
                 );
                 $user_patron->id_number = $request->id_number;
             }
             $user_patron->save();
 
-            $token = auth('api')->login($user);
-            $otp = OTPController::generateOTP($user->id);
-            Mail::to($user->email)->send(new EmailVerification($user, $otp));      
-
             DB::commit();
 
-            // return $this->respondWithToken($token);
-            return $this->respondWithToken($token);
+            return response()->json([
+            'error' => false,
+            'message' => 'Registration successful!',
+            'access_token' => auth('api')->login($user),
+            'data' => [
+                'user' => $user,
+                'patron' => $user_patron,
+            ],
+        ], 201);
+
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
