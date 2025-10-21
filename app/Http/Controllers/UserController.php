@@ -35,6 +35,24 @@ class UserController extends Controller
         ], $validated);
     }
 
+    private function userValidation(Request $request, ?User $user = null): array
+    {
+        return $request->validate([
+            'first_name' => 'sometimes|string|max:255',
+            'middle_initial' => 'sometimes|string|max:2',
+            'last_name' => 'sometimes|string|max:255',
+            'sex' => 'sometimes|in:male,female',
+            'email' => [
+                'sometimes',
+                'email',
+                // exclude current user from email uniqueness check (for updates)
+                'unique:users,email' . ($user ? ',' . $user->id : ''),
+            ],
+            'contact_number' => 'sometimes|string|max:255',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+    }
+
     /**
      * Display all users.
      */
@@ -135,9 +153,68 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
-        //
+        $authUser = auth('api')->user();
+
+        if (!$authUser || !($authUser instanceof \App\Models\User)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Unauthorized user',
+            ], 401);
+        }
+
+        // Validate user input
+        $validated = $this->userValidation($request, $authUser);    
+
+        if ($request->hasFile('profile_picture')) {
+            $file = $request->file('profile_picture');
+
+            // Generate a unique filename
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // Move the file to storage/app/public/profile_images
+            $file->move(storage_path('app/public/profile_images/'), $filename);
+
+            // Delete old profile photo record if exists
+            if ($authUser->profile_picture) {
+                $oldPhoto = \App\Models\ProfilePhotos::find($authUser->profile_picture);
+                if ($oldPhoto) {
+                    $oldPath = storage_path('app/public/profile_images/' . $oldPhoto->stored_name);
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
+                    $oldPhoto->delete();
+                }
+            }
+
+            // Insert new photo record
+            $photo = \App\Models\ProfilePhotos::create([
+                'user_id' => $authUser->id,
+                'original_name' => $file->getClientOriginalName(),
+                'stored_name' => $filename,
+                'path' => 'storage/profile_images/' . $filename, // relative path for asset()
+            ]);
+
+            // Update user's profile_picture column to reference new photo ID
+            $validated['profile_picture'] = $photo->id;
+        }
+
+        // Update user
+        $authUser->update($validated);
+        $authUser->refresh();
+
+        // Load full photo info for response
+        $authUser->profile_photo = $authUser->profile_picture 
+            ? \App\Models\ProfilePhotos::find($authUser->profile_picture) 
+            : null;
+
+        // Return updated user info
+        return response()->json([
+            'status' => 'success',
+            'message' => 'User information updated successfully!',
+            'user' => $authUser,
+        ]);
     }
 
     /**

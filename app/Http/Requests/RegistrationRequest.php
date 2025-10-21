@@ -29,12 +29,12 @@ class RegistrationRequest extends FormRequest
             'sex'                       => ['required', 'in:male,female,others'],
             'campus_id'                 => ['nullable', 'exists:campuses,id'],
             'id_number'                 => ['nullable', 'string', 'max:50', Rule::unique('patrons', 'id_number')],
-            // 'external_organization'     => ['nullable', 'in:1,2'], //pwede to baguhin?
+            // 'external_organization'     => ['nullable', 'in:1,2'],
             'external_organization' => ['nullable', 'string', 'max:255'],
             'role'                      => ['required', 'in:1,2'],
             'email'                     => ['required', 'email', Rule::unique('users', 'email'),],
             'password'                  => ['required', 'string', 'min:8', 'confirmed'],
-            'patron_type'               => ['required', 'exists:patron_types,id'],
+            'patron_type_id'               => ['required', 'exists:patron_types,id'],
         ];
     }
 }
