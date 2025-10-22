@@ -23,11 +23,47 @@ class Item extends Model
         'maintext_raw',
     ];
 
-    public function publication() : HasOne {
-        return $this->hasOne(Publisher::class);
+    public function publisher() : HasOne {
+        return $this->hasOne(Publisher::class, 'id');
     }
 
-    public function type() : HasOne {
-        return $this->hasOne(ItemTypes::class);
+    public function itemType() : HasOne {
+        return $this->hasOne(ItemTypes::class, 'id', 'item_type_id');
+    }
+
+    public function language() : HasOne {
+        return $this->hasOne(Language::class, 'id');
+    }
+
+    public function book() {
+        return $this->hasOne(Book::class, 'item_id');
+    }
+
+    public function thesis() {
+        return $this->hasOne(Thesis::class, 'item_id');
+    }
+
+    public function audio() {
+        return $this->hasOne(Audio::class, 'item_id');
+    }
+
+    public function serial() {
+        return $this->hasOne(Serial::class, 'item_id');
+    }
+
+    public function periodical() {
+        return $this->hasOne(Periodical::class, 'item_id');
+    }
+
+    public function electronic() {
+        return $this->hasOne(Electronic::class, 'item_id');
+    }
+
+    public function vertical() {
+        return $this->hasOne(Vertical::class, 'item_id');
+    }
+
+    public function newspaper() {
+        return $this->hasOne(Newspaper::class, 'item_id');
     }
 }

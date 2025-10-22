@@ -9,4 +9,8 @@ class Language extends Model
     protected $fillable = [
         'name'
     ];
+
+    public function item() {
+        return $this->belongsTo(Item::class);
+    }
 }

@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->unsignedBigInteger('publisher_id');
+            $table->unsignedBigInteger('publisher_id')->nullable();
             $table->year('year_published')->nullable();
             $table->string('isbn_issn')->nullable();
             $table->string('edition')->nullable();
             $table->string('call_number');
-            $table->unsignedBigInteger('item_type_id');
-            $table->unsignedBigInteger('language_id');
+            $table->unsignedBigInteger('item_type_id')->nullable();
+            $table->unsignedBigInteger('language_id')->nullable();
             $table->string('remarks')->nullable();
             $table->json('maintext_raw')->nullable();
             $table->timestamps();

@@ -24,15 +24,16 @@ return new class extends Migration
             $table->string('username')->unique()->nullable();
             $table->string('password')->nullable();
 
-            $table->enum('role', ['0', '1', '2'])->default('2');
+            $table->enum('role', ['0', '1', '2'])->default('2'); // 0. Admin, 1. Librarian, 2. Patron
             $table->uuid('code')->unique()->nullable();
             $table->unsignedBigInteger('profile_picture')->nullable();
             $table->unsignedBigInteger('campus_id')->nullable();
             $table->unsignedBigInteger('settings_id')->nullable();
 
-            $table->enum('status', ['0', '1', '2'])->default('1'); // 0: Active, 1: Suspended, 2: Expired
+            $table->enum('status', ['0', '1', '2'])->default('0'); // 0: Active, 1: Suspended, 2: Expired
             $table->enum('pending_registration_approval', ['0', '1', '2'])->default('1'); // 0: Approved, 1: Pending, 2: Rejected
-            // $table->enum('is_disabled', ['0', '1'])->default('0'); // 0: No, 1: Yes
+            $table->integer('login_attempt')->default(0);
+            // $table->enum('is_disabled', ['0', 'e1'])->default('0'); // 0: No, 1: Yes
             
             $table->rememberToken();
             $table->timestamps();
@@ -62,3 +63,4 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
     }
 };
+    
