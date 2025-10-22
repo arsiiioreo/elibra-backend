@@ -152,6 +152,11 @@ Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
 
 // Patron Routes
 
+Route::post('/auth/verify-patron', [AuthController::class, 'verifyPatronEmail']);
 
+Route::middleware(['jwt.auth'])->group(function () {
+    Route::post('/me/update', [UserController::class, 'update']);
+
+});
 
 // All Users Routes

@@ -26,7 +26,9 @@ class OTPVerifier extends Controller
         try {
             $otpRecord->delete(); // Invalidate the OTP after successful verification
             $user->code = null;
-            $user->save();
+            if ($user instanceof User) {
+                $user->save();
+            }
             return response()->json(['status' => 'success'], 200);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Something went wrong. Please try again.'], 500);

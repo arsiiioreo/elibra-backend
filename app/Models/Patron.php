@@ -12,6 +12,7 @@ class Patron extends Model
         'id_number',
         'ebc',
         'program_id',
+        'campus_id',
         'patron_type_id',
         'external_organization',
         'address'
@@ -23,5 +24,10 @@ class Patron extends Model
 
     public function program() :BelongsTo {
         return $this->belongsTo(Programs::class);
+    }
+
+    //eto
+    public function campus() :BelongsTo {
+        return $this->belongsTo(Campus::class);
     }
 }

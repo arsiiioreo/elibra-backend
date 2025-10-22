@@ -24,7 +24,7 @@ class OTPController extends Controller
         $user->code = $otp->otp_token;
         $user->save();
 
-        Mail::to($user->email)->send(new EmailVerification($user, $otp->otp_code));
+        // Mail::to($user->email)->send(new EmailVerification($user, $otp->otp_code));
         return $otp;
     }
 }
