@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public static function user() {
+    public static function user()
+    {
         return auth('api')->user();
     }
-    
+
     private function validation(Request $request): array
     {
         $validated = Validator::make($request->all(), [
@@ -67,7 +68,7 @@ class UserController extends Controller
             ->orderBy($validated['sort'], $validated['order'])
             ->paginate(
                 $validated['entries'],
-                ['id', 'last_name', 'middle_initial', 'first_name', 'role', 'email'],
+                ['id', 'last_name', 'middle_initial', 'first_name', 'role', 'email', 'status', 'pending_registration_approval'],
                 'page',
                 $validated['page']
             );
@@ -79,6 +80,8 @@ class UserController extends Controller
             } elseif ($user->role === '1') {
                 $user->roleText = "Librarian";
             }
+
+            $user->status = $user->status === '0' ? 'Active' : ($user->status === '1' ? 'Suspended' : 'Expired');
 
             switch ($user->role) {
                 case '0':
@@ -98,6 +101,121 @@ class UserController extends Controller
 
         return response()->json($users);
     }
+
+    public function details($id)
+    {
+        $user = User::withTrashed()->find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        if ($user->role === '2') {
+            $user->patron();
+        } elseif ($user->role === '1') {
+            $user->roleText = "Librarian";
+        }
+
+        switch ($user->role) {
+            case '0':
+                $user->role = "Administrator";
+                break;
+            case '1':
+                $user->role = "Librarian";
+                break;
+            case '2':
+                $user->role = "Patron";
+                break;
+            default:
+                $user->role = "Unknown";
+                break;
+        }
+
+        return response()->json($user);
+    }
+
+    public function approveUser($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        // if (!$user->pending_registration_approval) {
+        //     return response()->json(['message' => 'User registration is already approved'], 400);
+        // }
+
+        $user->pending_registration_approval = '0';
+        $user->save();
+
+        return response()->json(['message' => 'User registration approved successfully']);
+    }
+
+    public function rejectUser($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(["message" => "User not found"], 400);
+        }
+
+        $user->pending_registration_approval = "2";
+        $user->save();
+
+        return response()->json(["message" => "User registration rejected successfully"]);
+    }
+
+    public function updateInfo(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(["message" => "User not found"], 400);
+        }
+
+        $data = Validator::make($request->all(), [
+            "last_name" => "required|string|max:255",
+            "first_name" => "required|string|max:255",
+            "middle_initial" => "nullable|string|max:1",
+            "sex" => "required",
+            "contact_number" => "nullable",
+            "email" => "required",
+            "username" => "nullable",
+        ]);
+
+        if ($data->fails()) {
+            return response()->json(["message" => $data->errors()->first()], 400);
+        }
+
+        $upcase = [
+            "last_name" => ucwords(strtolower($request->last_name)),
+            "first_name" => ucwords(strtolower($request->first_name)),
+            "middle_initial" => strtoupper($request->middle_initial)
+        ];
+
+        $user->last_name = $upcase["last_name"] ?? $user->last_name;
+        $user->first_name = $upcase["first_name"] ?? $user->first_name;
+        $user->middle_initial = $upcase["middle_initial"] ?? $user->middle_initial;
+        $user->sex = $data->sex ?? $user->sex;
+        $user->contact_number = $data->contact_number ?? $user->contact_number;
+        $user->email = $data->email ?? $user->email;
+        $user->username = $data->username ?? $user->username;
+        $user->save();
+
+        return  response()->json(["message" => "Info updated successfully"], 200);
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
     /**

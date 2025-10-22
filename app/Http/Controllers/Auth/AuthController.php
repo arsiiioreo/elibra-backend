@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\OTPController;
 use App\Http\Requests\RegistrationRequest;
 use App\Mail\EmailVerification;
+use App\Models\ActivityLog;
 use App\Models\OTP;
 use App\Models\Patron;
 use App\Models\PatronTypes;
@@ -102,7 +103,7 @@ class AuthController extends Controller
             //     ->where('expires_at', '>', now())
             //     ->first();
 
-                // dd(' token=' . $token . ' otp=' . $otp);
+            // dd(' token=' . $token . ' otp=' . $otp);
 
             if ($otpRecord) {
                 $user = User::find($otpRecord->user_id);
@@ -141,15 +142,52 @@ class AuthController extends Controller
             ], 404);
         }
 
+        if ($user && $user->login_attempt >= 5) {
+            return response()->json(["message" => "Too many failed login attempts, please contact your administrator to reset your password or resolve this issue."], 403);
+        }
+
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
+            
+
             if ($user && $user->pending_registration_approval) {
                 return response()->json(['status' => 'error', 'errors' => [
                     'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.'
                 ]], 403);
             }
             $token = auth('api')->login($user);
+
+            $user->login_attempt = 0;
+            $user->save();
+
+            ActivityLog::create([
+                'user_id' => auth('api')->user()->id,
+                'title' => 'Login',
+                'description' => 'You logged in.',
+            ]);
+
             return $this->respondWithToken($token);
         } else {
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'title' => 'Invalid Login',
+                'description' => 'Incorrect password, attempt to login failed.',
+            ]);
+
+            if ($user->role != 0) {
+                $user->login_attempt += 1;
+                
+                if ($user->login_attempt == 5) {
+                    $user->status = 1;
+                    ActivityLog::create([
+                        'user_id' => $user->id,
+                        'title' => 'Account Locked',
+                        'description' => 'Due to multiple login attempts, your account has been locked.',
+                    ]);
+                }
+                $user->save();
+
+            }
+
             return response()->json(['status' => 'error', 'errors' => [
                 'users' => 'Incorrect password, please try again.'
             ]], 401);
@@ -162,7 +200,22 @@ class AuthController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = User::create($request->only(['last_name', 'first_name', 'middle_initial', 'sex', 'role', 'email', 'password']));
+            $data = $request->validated();
+
+            $data['last_name'] = ucwords(strtolower($data['last_name']));
+            $data['first_name'] = ucwords(strtolower($data['first_name']));
+            $data['middle_initial'] = strtoupper($data['middle_initial']);
+
+            $user = User::create([
+                'last_name' => $data['last_name'],
+                'first_name' => $data['first_name'],
+                'middle_initial' => $data['middle_initial'],
+                'sex' => $data['sex'],
+                'role' => $data['role'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+            ]);
+
             $user_patron = Patron::create([
                 'user_id' => $user->id,
                 'patron_type_id' => $request->patron_type,
@@ -200,11 +253,29 @@ class AuthController extends Controller
 
             $token = auth('api')->login($user);
             DB::commit();
+
+            ActivityLog::create([
+                'user_id' => auth('api')->user()->id,
+                'title' => 'Registration',
+                'description' => 'Account is created.',
+            ]);
+
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    }
+
+    public function logout() {
+        ActivityLog::create([
+            'user_id' => auth('api')->user()->id,
+            'title' => 'Logout',
+            'description' => 'You logged out.',
+        ]);
+        auth('api')->logout();
+
+        return response()->json(['status' => 'success', 'message' => 'Successfully logged out']);
     }
 
     // Response with Token
