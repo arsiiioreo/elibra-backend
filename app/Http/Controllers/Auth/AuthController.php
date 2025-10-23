@@ -197,7 +197,13 @@ public function verifyPatronEmail(Request $request)
             $otpRecord->delete(); // Invalidate the OTP after successful verification
             DB::commit();
 
-            return response()->json(['status' => 'success'], 200);
+            // return response()->json(['status' => 'success'], 200);
+            $otp = $request->query('otp');
+            $token = $request->query('token');
+            $email = $request->query('email');
+            return redirect()->away(env('MOBILE_LOGIN') . '/otp-verification?otp=' . $otp . '&token=' . $token . '&email=' . urlencode($email));
+            // return redirect()->away(env('MOBILE_LOGIN') . '/email-verified');
+
         } else {
             return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
         }
@@ -206,7 +212,7 @@ public function verifyPatronEmail(Request $request)
         return response()->json(['status' => 'error', 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
     }
 }
-
+    
  // Login
     public function login()
     {

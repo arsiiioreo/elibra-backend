@@ -153,6 +153,8 @@ Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
 // Patron Routes
 
 Route::post('/auth/verify-patron', [AuthController::class, 'verifyPatronEmail']);
+Route::get('/verify-email', [AuthController::class, 'verifyPatronEmail']);
+Route::post('/auth/send-otp', [OTPVerifier::class, 'sendOTP'])->middleware('jwt.auth'); // Sending OTP for anything (email verification, 2FA, etc.) ♥
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/me/update', [UserController::class, 'update']);

@@ -153,7 +153,10 @@
             </div>
 
             <div style="text-align: center;">
-                <a href="{{ url('/api/auth/verify-email?token=' . $otp_token . '&otp=' . $otp) }}" class="verify-btn">Verify Now</a>
+                <!-- <a href="{{ url('/api/auth/verify-email?token=' . $otp_token . '&otp=' . $otp) }}" class="verify-btn">Verify Now</a> -->
+                 <a href="{{ url('/verify-email?code=' . $otp_token . '&otp=' . $otp . '&email=' . $email) }}" class="verify-btn">
+                    Verify Now
+                </a>
             </div>
         </div>
 
