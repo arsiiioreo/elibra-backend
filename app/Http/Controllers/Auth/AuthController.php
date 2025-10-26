@@ -20,6 +20,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Auth\OTPVerifier;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 class AuthController extends Controller
 {
@@ -27,83 +28,50 @@ class AuthController extends Controller
     {
         $auth = auth('api')->user();
 
-        // Default null values
-        $campus = null;
-        $branch = null;
-
-        if ($auth->isAdmin) {
-            $campus = ['name' => "Global"];
-            $branch = ['name' => "University Libary"];
-        } else if ($auth->isLibrarian) {
-            $campus = ['name' => "Echague Campus"];
-        }else if ($auth->patron && $auth->campus) {
-
-        // $campus = [
-        //     // 'id' => $auth->patron->campus->id,
-        //     'name' => $auth->patron->campus->name,
-        //     'abbrev' => $auth->patron->campus->abbrev ?? null,
-        //     'address' => $auth->patron->campus->address ?? null,
-        // ];
-
-        // Check if patron_type is Guest (3)
-            $guestType = PatronTypes::where('name', 'Guest')->first()->id;
-
-            if ($auth->patron->patron_type_id == $guestType) {
-                $externalOrganization = [
-                    'name' => $auth->patron->external_organization,
-                ];
-            } else if ($auth->campus) {
-                $campus = [
-                    'name' => $auth->campus->name,
-                    'abbrev' => $auth->campus->abbrev ?? null,
-                    'address' => $auth->campus->address ?? null,
-                ];
-            }
-        }
-     
-
-        $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png');
-
-        $profilePhoto = $auth->profile_photos ? [
-            'id' => $auth->profile_photos->id,
-            'path' => asset( $auth->profile_photos->path),
-            'original_name' => $auth->profile_photos->original_name,
-            'stored_name' => $auth->profile_photos->stored_name,
-        ] : null;
-
         $data = [
+            // Personal Info
             'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : ''),
             'last_name' => $auth->last_name,
             'middle_initial' => $auth->middle_initial ?? 'N/A',
             'first_name' => $auth->first_name,
             'sex' => $auth->sex,
+            
+            // Contact Info
             'contact_number' => $auth->contact_number,
             'email' => $auth->email,
+            
+            //Account Info
             'email_verified_at' => $auth->email_verified_at,
-            'date_joined' => $auth->patron?->date_joined,
-            'profile_picture' => $pfp,
-            'profile_photo' => $profilePhoto,
-            'campus' => $campus,
-            'id_number' => $auth->patron?->id_number,  
+            'profile_picture' => $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png'),
+            'role' => $auth->role,
+
+            'id_number' => $auth->patron?->id_number,
             'address' => $auth->patron?->address,
             'ebc' => $auth->patron?->ebc ?? 'N/A',
-            'role' => $auth->role,
-            'patron_type' => $auth->patron?->patron_type_id,
         ];
 
-        //fetch external_org for aliens
-        if ($auth->patron && $auth->patron->patron_type_id == 3) {
-            $data['external_organization'] = $auth->patron->external_organization ?? null;
-        }
+        if ($auth->isAdmin) {
+            $data += [
 
-        // // Conditional append
-        if ($branch) {
-            $data['branch'] = $branch;
+            ];
+
+        } else if ($auth->isLibrarian) {
+            $data += [
+                'campus' => $auth->campus,
+            ];
+        } else if ($auth->isPatron) {
+
+            // $guestType = PatronTypes::where('name', 'Guest')->first()->id;
+
+            $data += [
+                "campus" => $auth->campus,
+                'patron' => $auth->patron,
+                'patron_type' => $auth->patron->patron_type
+            ];
         }
 
         return response()->json($data);
     }
-
 
     public function refresh()
     {
@@ -134,10 +102,10 @@ class AuthController extends Controller
 
         try {
             // $user = auth('api')->user();
-            
+
             // if (!$user || !($user instanceof User)) {
-                //     return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
-                // }
+            //     return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
+            // }
 
             $otpRecord = OTP::where('otp_code', $validated['otp'])
                 ->where('otp_token', $validated['token'])
@@ -180,34 +148,34 @@ class AuthController extends Controller
         }
     }
 
-public function verifyPatronEmail(Request $request)
-{
-    DB::beginTransaction();
-    try {
-        $otpRecord = OTP::where('otp_code', $request->otp)
-            ->where('otp_token', $request->code)
-            ->where('expires_at', '>', now())
-            ->first();
+    public function verifyPatronEmail(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $otpRecord = OTP::where('otp_code', $request->otp)
+                ->where('otp_token', $request->code)
+                ->where('expires_at', '>', now())
+                ->first();
 
-        if ($otpRecord) {
-            $user = User::find($otpRecord->user_id);
-            $user->email_verified_at = now();
-            $user->save();
+            if ($otpRecord) {
+                $user = User::find($otpRecord->user_id);
+                $user->email_verified_at = now();
+                $user->save();
 
-            $otpRecord->delete(); // Invalidate the OTP after successful verification
-            DB::commit();
+                $otpRecord->delete(); // Invalidate the OTP after successful verification
+                DB::commit();
 
-            return response()->json(['status' => 'success'], 200);
-        } else {
-            return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
+                return response()->json(['status' => 'success'], 200);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
         }
-    } catch (Exception $e) {
-        DB::rollBack();
-        return response()->json(['status' => 'error', 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
     }
-}
 
- // Login
+    // Login
     public function login()
     {
         $user = User::where('email', request('user'))->first() ??
@@ -227,7 +195,7 @@ public function verifyPatronEmail(Request $request)
         }
 
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
-            
+
 
             if ($user && $user->pending_registration_approval) {
                 return response()->json(['status' => 'error', 'errors' => [
@@ -255,7 +223,7 @@ public function verifyPatronEmail(Request $request)
 
             if ($user->role != 0) {
                 $user->login_attempt += 1;
-                
+
                 if ($user->login_attempt == 5) {
                     $user->status = 1;
                     ActivityLog::create([
@@ -265,7 +233,6 @@ public function verifyPatronEmail(Request $request)
                     ]);
                 }
                 $user->save();
-
             }
 
             return response()->json(['status' => 'error', 'errors' => [
@@ -307,12 +274,12 @@ public function verifyPatronEmail(Request $request)
 
             $guestType = PatronTypes::where('name', 'Guest')->first()->id;
 
-            if ($request->patron_type_id== $guestType) {
+            if ($request->patron_type_id == $guestType) {
                 $user->campus_id = null;
                 $user->save();
 
                 $user_patron->external_organization = $request->external_organization;
-                $user_patron->ebc = sprintf(    
+                $user_patron->ebc = sprintf(
                     'EBC%s%s%s',
                     Str::padLeft($user_patron->id, 3, '0'), // ensure 3-digit campus_id
                     Str::padLeft($user->id, 5, '0'),       // ensure 5-digit user_id
@@ -348,16 +315,32 @@ public function verifyPatronEmail(Request $request)
         }
     }
 
-    public function logout() {
-        ActivityLog::create([
-            'user_id' => auth('api')->user()->id,
-            'title' => 'Logout',
-            'description' => 'You logged out.',
-        ]);
-        auth('api')->logout();
+    public function logout()
+    {
+        try {
+            $user = auth('api')->user();
+            if ($user) {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'title' => 'Logout',
+                    'description' => 'You logged out.',
+                ]);
+            }
 
-        return response()->json(['status' => 'success', 'message' => 'Successfully logged out']);
+            auth('api')->logout();
+            return response()->json(['status' => 'success', 'message' => 'Successfully logged out']);
+        } catch (TokenExpiredException $e) {
+            // Decode token manually and invalidate
+            $token = JWTAuth::getToken();
+            $payload = JWTAuth::manager()->decode($token, false); // skip expiry check
+            JWTAuth::invalidate($token);
+
+            return response()->json(['status' => 'success', 'message' => 'Logged out (expired token handled)']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Failed to logout', 'error' => $e->getMessage()]);
+        }
     }
+
 
     // Response with Token
     public function respondWithToken($token)

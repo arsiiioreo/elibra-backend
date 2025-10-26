@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcquisitionRequestController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\OTPVerifier;
@@ -12,6 +13,7 @@ use App\Http\Controllers\PatronTypesController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\UserController;
+use App\Models\AcquisitionRequest;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
@@ -84,8 +86,14 @@ Route::get('/patron-types', [PatronTypesController::class, 'index']); // ♥
 
 // Item Management
 Route::group(['prefix' => '/item'], function () {
-    Route::get('/get', [ItemController::class, 'index']);
+    Route::get('/get', [ItemController::class, 'index']); // ♥
     Route::post('/add', [ItemController::class, 'create']); // ♥
+});
+
+
+// Acquisition Requests
+Route::group(['prefix' => '/acquisition'], function () {
+    Route::post('/request', [AcquisitionRequestController::class, 'createRequest']);
 });
 
 
@@ -96,13 +104,11 @@ Route::group(['prefix' => '/item'], function () {
 
 
 
-
-
+Route::get('/item-type/get', [ItemTypesController::class, 'read']); // ♥
 
 // Admin Routes
 Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
     Route::post('/item-type/add', [ItemTypesController::class, 'create']); // ♥
-    Route::get('/item-type/get', [ItemTypesController::class, 'read']); // ♥
     Route::put('/item-type/edit', [ItemTypesController::class, 'update']); // ♥
     Route::delete('/item-type/delete/{id}', [ItemTypesController::class, 'delete']);
     Route::put('/item-type/restore/{id}', [ItemTypesController::class, 'restore']);
