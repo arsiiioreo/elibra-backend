@@ -107,6 +107,12 @@ class ItemController extends Controller
         return response()->json($items);
     }
 
+    public function thisItem($id) {
+        $item = Item::find($id)->load('language','publisher');
+
+        return response()->json($item);
+    }
+
 
     public function create(Request $request)
     {
