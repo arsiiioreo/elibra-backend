@@ -41,6 +41,7 @@ return new class extends Migration
 
         Schema::table('books', function (Blueprint $table) {
             $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
+            $table->foreign('categories_id')->references('id')->on('categories')->onDelete('cascade');
         });
 
         Schema::table('theses', function (Blueprint $table) {
@@ -134,10 +135,20 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('affected_user_id')->references('id')->on('users')->onDelete('cascade');
         });
+
+        Schema::table('librarians', function (Blueprint $table) {
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
+        });
     }
 
     public function down(): void
     {
+        Schema::table('librarians', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+            $table->dropForeign(['branch_id']);
+        });
+
         Schema::table('activity_logs', function (Blueprint $table) {
             $table->dropForeign(['user_id']);
             $table->dropForeign(['affected_user_id']);
@@ -232,6 +243,7 @@ return new class extends Migration
 
         Schema::table('books', function (Blueprint $table) {
             $table->dropForeign(['item_id']);
+            $table->dropForeign(['categories_id']);
         });
 
         Schema::table('items', function (Blueprint $table) {

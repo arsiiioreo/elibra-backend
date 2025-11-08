@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Campus;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -51,5 +52,30 @@ class CampusController extends Controller
             'page'      => 1,
             'per_page'  => 10,
         ], $validated);
+    }
+
+    public function add(Request $request)
+    {
+        $data = Validator::make($request->all(), [
+            'name' => 'required',
+            'abbrev' => 'required',
+            'address' => 'required',
+        ]);
+
+        if ($data->fails()) {
+            return response()->json(['status' => 'error', 'message' => 'An error occured, please check your inputs and try again.']);
+        }
+
+        try {
+            $campus = new Campus();
+            $campus->name = $request->name;
+            $campus->abbrev = $request->abbrev;
+            $campus->address = $request->address;
+            $campus->save();
+
+            return response()->json(['status' => 'success', 'message' => 'Successfully added ' . $campus->campus . ' campus.']);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+        }
     }
 }

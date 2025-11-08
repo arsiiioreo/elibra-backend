@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class AcquisitionRequestController extends Controller
 {
+    public function index(Request $request) {
+        $acquisitions = AcquisitionRequest::all();
+
+        return response()->json(['data' => $acquisitions]);
+    }
+
     public function createRequest(Request $request) {
         $data = $request->validate([
             'title' => 'required',
@@ -26,7 +32,7 @@ class AcquisitionRequestController extends Controller
             'dept' => $request->dept,
             'item_type_id' => $request->item_type_id,
             'date_ordered' => now(),
-            'status' => $request->status ?? null
+            'status' => 'request',
         ]);
 
         return response()->json(['message' => 'Acquisition Request successfully recorded.'], 201);

@@ -14,8 +14,6 @@ class Item extends Model
         'title',
         'publisher_id',
         'year_published',
-        'isbn_issn',
-        'edition',
         'call_number',
         'item_type_id',
         'language_id',
@@ -23,16 +21,23 @@ class Item extends Model
         'maintext_raw',
     ];
 
-    public function publisher() : HasOne {
-        return $this->hasOne(Publisher::class, 'id');
+    public function accession() {
+        return $this->hasMany(Accessions::class, 'item_id', 'id');
+    }
+
+    public function authors() {
+        return $this->hasMany(ItemAuthors::class, 'item_id', 'id');
+    }
+    public function publisher() {
+        return $this->belongsTo(Publisher::class, 'publisher_id', 'id');
     }
 
     public function itemType() : HasOne {
         return $this->hasOne(ItemTypes::class, 'id', 'item_type_id');
     }
 
-    public function language() : HasOne {
-        return $this->hasOne(Language::class, 'id');
+    public function language() {
+        return $this->belongsTo(Language::class, 'language_id','id');
     }
 
     public function book() {
@@ -41,6 +46,10 @@ class Item extends Model
 
     public function thesis() {
         return $this->hasOne(Thesis::class, 'item_id');
+    }
+
+    public function dissertation() {
+        return $this->hasOne(Dissertation::class, 'item_id');
     }
 
     public function audio() {

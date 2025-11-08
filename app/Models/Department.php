@@ -11,13 +11,13 @@ class Department extends Model
 {
     use SoftDeletes;
     
-    protected $fillables = ['name', 'abbrev', 'campus_id'];
+    protected $fillable = ['name', 'abbrev', 'campus_id'];
 
     public function campus() : BelongsTo {
-        return $this->belongsTo(Campus::class);
+        return $this->belongsTo(Campus::class, 'campus_id');
     }
 
-    public function programs() : HasMany {
-        return $this->hasMany(Programs::class);
+    public function program()  {
+        return $this->hasMany(Program::class);
     }
 }

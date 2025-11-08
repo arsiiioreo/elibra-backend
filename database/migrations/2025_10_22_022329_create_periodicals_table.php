@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('periodicals', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('item_id');
+            $table->string('isbn_issn')->nullable();
             $table->string('volume')->nullable();
             $table->string('issue')->nullable();
             $table->string('pages')->nullable();

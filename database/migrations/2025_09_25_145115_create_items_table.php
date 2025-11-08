@@ -15,10 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->unsignedBigInteger('publisher_id')->nullable();
-            $table->year('year_published')->nullable();
-            $table->string('isbn_issn')->nullable();
-            $table->string('edition')->nullable();
             $table->string('call_number');
+            $table->year('year_published')->nullable();
             $table->unsignedBigInteger('item_type_id')->nullable();
             $table->unsignedBigInteger('language_id')->nullable();
             $table->string('remarks')->nullable();

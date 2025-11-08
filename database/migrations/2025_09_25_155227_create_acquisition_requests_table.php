@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('dept_head')->nullable();
             $table->unsignedBigInteger('item_type_id');
             $table->date('date_ordered')->nullable();
-            $table->enum('status', ['pending', 'ordered', 'declined', 'cancelled'])->default('pending');
+            $table->enum('status', ['request', 'pending', 'ordered', 'declined', 'cancelled'])->default('request');
             $table->timestamps();
         });
     }

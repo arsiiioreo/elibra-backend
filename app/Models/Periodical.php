@@ -10,6 +10,7 @@ class Periodical extends Model
         'item_id',
         'volume',
         'issue',
+        'isbn_issn',
         'pages',
     ];
 

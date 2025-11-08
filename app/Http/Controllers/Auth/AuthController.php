@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\OTPController;
 use App\Http\Requests\RegistrationRequest;
-use App\Mail\EmailVerification;
 use App\Models\ActivityLog;
+use App\Models\Librarian;
 use App\Models\OTP;
 use App\Models\Patron;
 use App\Models\PatronTypes;
@@ -14,13 +13,11 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Auth\OTPVerifier;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -30,24 +27,21 @@ class AuthController extends Controller
 
         $data = [
             // Personal Info
-            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : ''),
+            'name' => $auth->last_name.', '.$auth->first_name.' '.($auth->middle_initial ? $auth->middle_initial.'.' : ''),
             'last_name' => $auth->last_name,
             'middle_initial' => $auth->middle_initial ?? 'N/A',
             'first_name' => $auth->first_name,
             'sex' => $auth->sex,
-            
+
             // Contact Info
             'contact_number' => $auth->contact_number,
             'email' => $auth->email,
-            
-            //Account Info
+
+            // Account Info
             'email_verified_at' => $auth->email_verified_at,
-            'profile_picture' => $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png'),
+            'profile_picture' => $auth->profile_photos?->path ? asset('storage/'.$auth->profile_photos?->path) : asset('logo.png'),
             'role' => $auth->role,
 
-            'id_number' => $auth->patron?->id_number,
-            'address' => $auth->patron?->address,
-            'ebc' => $auth->patron?->ebc ?? 'N/A',
         ];
 
         if ($auth->isAdmin) {
@@ -55,18 +49,17 @@ class AuthController extends Controller
 
             ];
 
-        } else if ($auth->isLibrarian) {
+        } elseif ($auth->isLibrarian) {
+            $data += [
+                'campus' => $auth->librarian->branch->campus,
+                'librarian' => $auth->librarian,
+                "branch" => $auth->librarian->branch
+            ];
+        } elseif ($auth->isPatron) {
             $data += [
                 'campus' => $auth->campus,
-            ];
-        } else if ($auth->isPatron) {
-
-            // $guestType = PatronTypes::where('name', 'Guest')->first()->id;
-
-            $data += [
-                "campus" => $auth->campus,
                 'patron' => $auth->patron,
-                'patron_type' => $auth->patron->patron_type
+                'patron_type' => $auth->patron->patron_type,
             ];
         }
 
@@ -80,13 +73,13 @@ class AuthController extends Controller
 
         try {
             return response()->json([
-                'status'       => 'success',
+                'status' => 'success',
                 'access_token' => $auth->refresh(),
-                'token_type'   => 'bearer',
+                'token_type' => 'bearer',
             ]);
         } catch (JWTException $e) {
-            throw $e;
-            return response()->json(['error' => 'Token invalid or expired'], 401);
+            // throw $e;
+            return response()->json(['error' => 'Token invalid or expired', 'additional_error' => $e->getMessage()], 401);
         }
     }
 
@@ -124,7 +117,6 @@ class AuthController extends Controller
                 'otp' => $validated['otp'],
             ]);
 
-
             if ($otpRecord) {
                 $user = User::find($otpRecord->user_id);
                 $user->email_verified_at = now();
@@ -138,13 +130,14 @@ class AuthController extends Controller
 
                 // return response()->json(['status' => 'success'], 200);
 
-                return redirect()->away(env('FRONTEND_URL') . '/email-verified');
+                return redirect()->away(env('FRONTEND_URL').'/email-verified');
             } else {
                 return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong.' . $e->getMessage()], 500);
+
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong.'.$e->getMessage()], 500);
         }
     }
 
@@ -171,7 +164,8 @@ class AuthController extends Controller
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
+
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong: '.$e->getMessage()], 500);
         }
     }
 
@@ -179,28 +173,25 @@ class AuthController extends Controller
     public function login()
     {
         $user = User::where('email', request('user'))->first() ??
-            Patron::where('id_number', request('user'))->first()?->user;
+            Patron::where('id_number', request('user'))->first()?->user ?? Librarian::where('username', request('user'))->first()?->user;
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'status' => 'error',
-                'errors' => [
-                    'users' => 'User not found.'
-                ]
-            ], 404);
+                'message' => 'User not found.',
+            ]);
+
         }
 
         if ($user && $user->login_attempt >= 5) {
-            return response()->json(["message" => "Too many failed login attempts, please contact your administrator to reset your password or resolve this issue."], 403);
+            return response()->json(['message' => 'Too many failed login attempts, please contact your administrator to reset your password or resolve this issue.'], 403);
         }
 
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
-
-
             if ($user && $user->pending_registration_approval) {
                 return response()->json(['status' => 'error', 'errors' => [
-                    'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.'
-                ]], 403);
+                    'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.',
+                ]]);
             }
             $token = auth('api')->login($user);
 
@@ -235,12 +226,11 @@ class AuthController extends Controller
                 $user->save();
             }
 
-            return response()->json(['status' => 'error', 'errors' => [
-                'users' => 'Incorrect password, please try again.'
-            ]], 401);
+            return response()->json(['status' => 'error', 
+                'message' => 'Incorrect password, please try again.',
+            ]);
         }
     }
-
 
     // Registration API for Patrons
     public function register(RegistrationRequest $request)
@@ -266,7 +256,7 @@ class AuthController extends Controller
 
             $user_patron = Patron::create([
                 'user_id' => $user->id,
-                'patron_type_id' => $request->patron_type_id,
+                'patron_type_id' => $request->validated()['patron_type_id'],
                 'status' => 'active', // Set status to inactive for Guest patrons
             ]);
 
@@ -274,11 +264,11 @@ class AuthController extends Controller
 
             $guestType = PatronTypes::where('name', 'Guest')->first()->id;
 
-            if ($request->patron_type_id == $guestType) {
+            if ($request->validated()['patron_type_id'] == $guestType) {
                 $user->campus_id = null;
                 $user->save();
 
-                $user_patron->external_organization = $request->external_organization;
+                $user_patron->external_organization = $request->validated()['external_organization'];
                 $user_patron->ebc = sprintf(
                     'EBC%s%s%s',
                     Str::padLeft($user_patron->id, 3, '0'), // ensure 3-digit campus_id
@@ -286,7 +276,7 @@ class AuthController extends Controller
                     Str::upper(Str::random(5))            // random suffix for uniqueness
                 );
             } else {
-                $user->campus_id = $request->campus;
+                $user->campus_id = $request->validated()['campus'];
                 $user->save();
 
                 $user_patron->ebc = sprintf(
@@ -296,7 +286,7 @@ class AuthController extends Controller
                     Str::upper(Str::random(5))             // random suffix for uniqueness
                 );
             }
-            $user_patron->id_number = $request->id_number; // ID number for guest and non-guest
+            $user_patron->id_number = $request->validated()['id_number']; // ID number for guest and non-guest
             $user_patron->save();
 
             $token = auth('api')->login($user);
@@ -311,6 +301,7 @@ class AuthController extends Controller
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
@@ -328,6 +319,7 @@ class AuthController extends Controller
             }
 
             auth('api')->logout();
+
             return response()->json(['status' => 'success', 'message' => 'Successfully logged out']);
         } catch (TokenExpiredException $e) {
             // Decode token manually and invalidate
@@ -340,7 +332,6 @@ class AuthController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Failed to logout', 'error' => $e->getMessage()]);
         }
     }
-
 
     // Response with Token
     public function respondWithToken($token)

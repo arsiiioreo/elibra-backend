@@ -22,12 +22,15 @@ class Patron extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function program() :BelongsTo {
-        return $this->belongsTo(Programs::class);
+    public function patron_type() : BelongsTo {
+        return $this->belongsTo(PatronTypes::class);
     }
 
-    //eto
-    public function campus() :BelongsTo {
-        return $this->belongsTo(Campus::class);
+    public function program() : BelongsTo {
+        return $this->belongsTo(Program::class, 'program_id');
+    }
+
+    public function attendance_log() {
+        $this->hasMany(AttendanceLog::class, 'program_id', 'id');
     }
 }

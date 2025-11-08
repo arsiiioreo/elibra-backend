@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Branch;
 use App\Models\Campus;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Department;
+use App\Models\Program;
 use Illuminate\Database\Seeder;
 
 class CampusSeeder extends Seeder
@@ -19,7 +21,25 @@ class CampusSeeder extends Seeder
         ];
 
         foreach ($campuses as $campus) {
-            Campus::create($campus);
+            $c = Campus::create($campus);
+            $d = Department::create([
+                'name' => 'College of Computing Studies, Information and Communication Technology',
+                'abbrev' => 'CCSICT',
+                'campus_id' => $c->id,
+            ]);
+            Program::create([
+                'name' => 'Bachelor of Science in Information Technology',
+                'abbrev' => 'BSIT',
+                'department_id' => $d->id,
+            ]);
+            Branch::create([
+                'name' => 'University Library',
+                'campus_id' => $c->id,
+                'contact_info' => '09123456789',
+                'opening_hour' => '08:00:00',
+                'closing_hour' => '17:00:00',
+            ]);
+
         }
     }
 }

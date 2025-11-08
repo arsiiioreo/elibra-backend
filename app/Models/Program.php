@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Programs extends Model
+class Program extends Model
 {
     use SoftDeletes;
 
     protected $fillable = ['name', 'abbrev', 'department_id'];
 
     public function department() : BelongsTo {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Department::class, 'department_id', 'id');
     }
 
 }

@@ -12,14 +12,16 @@ class Accessions extends Model
     protected $fillable = [
         'item_id',
         'accession_number',
-        'location_id',
-        'status',
         'shelf_location',
-        'date_acquired',
-        'acquisition',
+        'status',
+        'branch_id',
         'date_acquired',
         'acquisition_id',
         'price',
         'remarks'
     ];
+
+    public function branch() {
+        return $this->belongsTo(Branch::class);
+    }
 }

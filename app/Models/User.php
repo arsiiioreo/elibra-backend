@@ -39,9 +39,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'sex',
         'contact_number',
         'email',
-        'username',
         'password',
         'role',
+        'pending_registration_approval',
         'profile_picture',
     ];
 
@@ -84,9 +84,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->hasOne(Patron::class, 'user_id');
     }
 
-    public function campus()
+    public function librarian()
     {
-        return $this->belongsTo(Campus::class, 'campus_id', 'id');
+        return $this->hasOne(Librarian::class, 'user_id');
     }
 
     public function profile_photos()

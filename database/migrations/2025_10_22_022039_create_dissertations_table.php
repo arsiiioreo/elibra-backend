@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('electronics', function (Blueprint $table) {
+        Schema::create('dissertations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('item_id');
-            $table->string('isbn_issn')->nullable();
-            $table->string('file_size')->nullable();
-            $table->string('access_url')->nullable();
+            $table->text('abstract')->nullable();
+            $table->string('advisor')->nullable();
+            $table->json('researchers')->nullable();
+            $table->unsignedBigInteger('program_id')->nullable();
+            $table->string('doi')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('electronics');
+        Schema::dropIfExists('dissertations');
     }
 };
