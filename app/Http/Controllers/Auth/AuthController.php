@@ -151,11 +151,6 @@ class AuthController extends Controller
 
             // dd(' token=' . $token . ' otp=' . $otp);
 
-            Log::info('Verify Email Request', [
-                'token' => $validated['token'],
-                'otp' => $validated['otp'],
-            ]);
-
 
             if ($otpRecord) {
                 $user = User::find($otpRecord->user_id);
@@ -197,12 +192,11 @@ public function verifyPatronEmail(Request $request)
             $otpRecord->delete(); // Invalidate the OTP after successful verification
             DB::commit();
 
-            // return response()->json(['status' => 'success'], 200);
-            $otp = $request->query('otp');
-            $token = $request->query('token');
-            $email = $request->query('email');
-            return redirect()->away(env('MOBILE_LOGIN') . '/otp-verification?otp=' . $otp . '&token=' . $token . '&email=' . urlencode($email));
-            // return redirect()->away(env('MOBILE_LOGIN') . '/email-verified');
+            return response()->json(['status' => 'success'], 200);
+            // $otp = $request->query('otp');
+            // $token = $request->query('token');
+            // $email = $request->query('email');
+            // return redirect()->away(env('MOBILE_LOGIN') . '/otp-verification?otp=' . $otp . '&token=' . $token . '&email=' . urlencode($email));
 
         } else {
             return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
@@ -229,7 +223,8 @@ public function verifyPatronEmail(Request $request)
         }
 
         if ($user && $user->login_attempt >= 5) {
-            return response()->json(["message" => "Too many failed login attempts, please contact your administrator to reset your password or resolve this issue."], 403);
+            return response()->json(["message" => "Too many failed login attempts, please contact your administrator to reset your password or resolve this issue."], 423);
+            // return response()->json(["message" => "locked"], 403);
         }
 
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
@@ -263,7 +258,7 @@ public function verifyPatronEmail(Request $request)
                 $user->login_attempt += 1;
                 
                 if ($user->login_attempt == 5) {
-                    $user->status = 1;
+                    $user->status = '1';
                     ActivityLog::create([
                         'user_id' => $user->id,
                         'title' => 'Account Locked',

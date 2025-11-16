@@ -16,6 +16,8 @@ class CampusSeeder extends Seeder
         $campuses = [
             ['name' => 'Echague Main Campus', 'abbrev' => 'ISU-E', 'address' => 'San Fabian, Echague, Isabela'],
             ['name' => 'Angadanan Campus', 'abbrev' => 'ISU-AC', 'address' => 'Centro 3, Angadanan, Isabela'],
+            ['name' => 'Cabagan Campus', 'abbrev' => 'ISU-C', 'address' => 'Centro 3, Angadanan, Isabela'],
+            ['name' => 'Jones Campus', 'abbrev' => 'ISU-J', 'address' => 'Centro 3, Angadanan, Isabela'],
         ];
 
         foreach ($campuses as $campus) {

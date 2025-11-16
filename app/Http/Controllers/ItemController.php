@@ -30,8 +30,10 @@ class ItemController extends Controller
             'sort'           => 'nullable|in:title,year_published,created_at',
             'order'          => 'nullable|in:asc,desc',
             'item_type_id'   => 'nullable|integer|exists:item_types,id',
-            'language_id'    => 'nullable|integer|exists:languages,id',
+            'item_type_id'   => 'nullable|array',
+            'language_id*'    => 'nullable|integer|exists:languages,id',
             'year_from'      => 'nullable|digits:4|integer|min:1000|max:' . date('Y'),
+            'campus_id'      => 'nullable|integer|exists:campuses,id',
             'year_to'        => 'nullable|digits:4|integer|min:1000|max:' . (date('Y') + 1),
             'page'           => 'nullable|integer|min:1',
             'entries'        => 'nullable|integer|min:1|max:100',
@@ -70,7 +72,7 @@ class ItemController extends Controller
                     });
                 }
             })
-            ->when(isset($validated['item_type_id']) && $validated['item_type_id'] !== '', function ($q) use ($validated) {
+            ->when(isset($validated['item_type_id']) && $validated['item_type_id*'] !== '', function ($q) use ($validated) {
                 $q->where('item_type_id', $validated['item_type_id']);
             })
             ->when(isset($validated['language_id']) && $validated['language_id'] !== '', function ($q) use ($validated) {
@@ -107,6 +109,71 @@ class ItemController extends Controller
         return response()->json($items);
     }
 
+    //For mobile App
+    public function indexMobile(Request $request)
+    {
+        $validated = $this->validation($request);
+
+        $validated['sort'] = $validated['sort'] ?? 'title';
+        $validated['order'] = $validated['order'] ?? 'asc';
+
+        $items = Item::query()
+            ->whereNull('deleted_at')
+            ->with('publisher', 'itemType', 'language', 'book', 'campus', 'thesis', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper') // Add 
+            ->when($validated['query'], function ($q, $search) {
+                $terms = explode(' ', $search);
+                foreach ($terms as $term) {
+                    $q->where(function ($inner) use ($term) {
+                        $inner
+                            ->where('title', 'like', "%$term%")
+                            ->orWhere('remarks', 'like', "%$term%")
+                            ->orWhere('isbn_issn', 'like', "%$term%")
+                            ->orWhere('call_number', 'like', "%$term%")
+                            ->orWhere('edition', 'like', "%$term%");
+                        });
+                    }
+                })
+                ->when(isset($validated['campus_id']) && $validated['campus_id'] !== '', function ($q) use ($validated) {
+                    $q->where('campus_id', $validated['campus_id']);
+                })
+                ->when(isset($validated['item_type_id']) && !empty($validated['item_type_id']), function ($q) use ($validated) {
+                    $q->whereIn('item_type_id', $validated['item_type_id']);
+                })
+                ->when(isset($validated['language_id']) && $validated['language_id'] !== '', function ($q) use ($validated) {
+                    $q->where('language_id', $validated['language_id']);
+                })
+                ->when($validated['year_from'] || $validated['year_to'], function ($q) use ($validated) {
+                    if ($validated['year_from']) {
+                        $q->where('year_published', '>=', $validated['year_from']);
+                    }
+                    if ($validated['year_to']) {
+                        $q->where('year_published', '<=', $validated['year_to']);
+                    }
+                })
+                ->orderBy($validated['sort'], $validated['order'])
+                ->paginate(
+                    $validated['entries'],
+                    [
+                        'id',
+                        'title',
+                        'isbn_issn',
+                        'edition',
+                        'call_number',
+                        'publisher_id',
+                        'year_published',
+                        'item_type_id',
+                        'language_id',
+                        'campus_id',
+                        'remarks',
+                        'created_at',
+                    ],
+                    'page',
+                $validated['page']
+            );
+
+            return response()->json($items);
+    }
+
 
     public function create(Request $request)
     {
@@ -120,6 +187,7 @@ class ItemController extends Controller
             'call_number' => 'required|string|max:100',
             'item_type_id' => 'required|integer|exists:item_types,id',
             'language_id' => 'nullable|integer|exists:languages,id',
+            'campus_id' => 'nullable|integer|exists:campuses,id',
             'remarks' => 'nullable|string',
             'maintext_raw' => 'nullable|json',
         ];

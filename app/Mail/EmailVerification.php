@@ -17,8 +17,8 @@ class EmailVerification extends Mailable
     public $user;
     public $otp;
     public $otp_token;
-    public $email; // Added
-    public $name;  // Added
+    public $email;
+    public $name;
 
     /**
      * Create a new message instance.
@@ -28,8 +28,8 @@ class EmailVerification extends Mailable
         $this->user = $user;
         $this->otp = $otp;
         $this->otp_token = $otp_token;
-        $this->email = $user->email; // Added
-        $this->name = $user->first_name ?? $user->email; /✅ Added
+        $this->email = $user->email;
+        $this->name = $user->first_name ?? $user->email;
     }
 
     /**
@@ -43,20 +43,21 @@ class EmailVerification extends Mailable
         );
     }
 
-    public function content(): Content  
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
     {
         return new Content(
-            view: 'mails.email_verification', 
+            view: 'mails.email_verification',
             with: [
-                'name' => $this->user->first_name,
+                'name' => $this->name,
                 'otp' => $this->otp,
                 'otp_token' => $this->otp_token,
-                'email' => $this->email, // ✅ Pass it
-                'name' => $this->name,   // ✅ Pass it
+                'email' => $this->email,
             ],
         );
     }
-
 
     // /**
     //  * Get the attachments for the message.
@@ -67,5 +68,4 @@ class EmailVerification extends Mailable
     // {
     //     return [];
     // }
-    
 }

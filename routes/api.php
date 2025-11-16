@@ -99,6 +99,8 @@ Route::group(['prefix' => '/item'], function () {
 
 
 
+
+
 // Admin Routes
 Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
     Route::post('/item-type/add', [ItemTypesController::class, 'create']); // ♥
@@ -151,14 +153,14 @@ Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
 
 
 // Patron Routes
-
 Route::post('/auth/verify-patron', [AuthController::class, 'verifyPatronEmail']);
-Route::get('/verify-email', [AuthController::class, 'verifyPatronEmail']);
-Route::post('/auth/send-otp', [OTPVerifier::class, 'sendOTP'])->middleware('jwt.auth'); // Sending OTP for anything (email verification, 2FA, etc.) ♥
 
 Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/me/update', [UserController::class, 'update']);
-
 });
 
+// Item Management Mobile
+Route::group(['prefix' => '/get'], function () {
+    Route::get('/item', [ItemController::class, 'indexMobile']);
+});
 // All Users Routes

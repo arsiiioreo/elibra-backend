@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Item;
+use App\Models\Campus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -13,6 +14,9 @@ class ItemSeeder extends Seeder
      */
     public function run(): void
     {
+        // Get all campus IDs from the database
+        $campusIds = Campus::pluck('id')->toArray();
+
         $data = [
             [
                 'title' => 'The Great Gatsby',
@@ -23,6 +27,7 @@ class ItemSeeder extends Seeder
                 'call_number' => 'PS3511.I9 G7 1925',
                 'item_type_id' => 1,
                 'language_id' => 1,
+                'campus_id' => $campusIds[array_rand($campusIds)],
                 'remarks' => 'Classic novel',
             ],
             [
@@ -34,6 +39,7 @@ class ItemSeeder extends Seeder
                 'call_number' => 'PS3562.E353 T6 1960',
                 'item_type_id' => 1,
                 'language_id' => 1,
+                'campus_id' => $campusIds[array_rand($campusIds)],
                 'remarks' => 'Pulitzer Prize winner',
             ],
             [
@@ -45,6 +51,7 @@ class ItemSeeder extends Seeder
                 'call_number' => 'PR6029.R8 N49 1949',
                 'item_type_id' => 1,
                 'language_id' => 1,
+                'campus_id' => $campusIds[array_rand($campusIds)],
                 'remarks' => 'Dystopian novel',
             ],
             [
@@ -56,7 +63,8 @@ class ItemSeeder extends Seeder
                 'call_number' => 'DEV.ISU.ELIBRA.2024',
                 'item_type_id' => 2,
                 'language_id' => 1,
-                'remarks' => 'ISU Centralized Library Management System. Wala lang, parehas kaming pasuko na HAHAH.',
+                'campus_id' => $campusIds[array_rand($campusIds)],
+                'remarks' => 'ISU Centralized Library Management System.',
             ],
         ];
 
@@ -73,13 +81,14 @@ class ItemSeeder extends Seeder
 
             $data[] = [
                 'title' => $title,
-                'publisher_id' => 1,
+                'publisher_id' => rand(1, 4),
                 'year_published' => $year,
                 'isbn_issn' => $isbn,
                 'edition' => $editions[array_rand($editions)],
                 'call_number' => 'CN-' . strtoupper(Str::random(6)),
                 'item_type_id' => $type,
                 'language_id' => $lang,
+                'campus_id' => $campusIds[array_rand($campusIds)],
                 'remarks' => 'Auto-generated seed data for testing purposes.',
             ];
         }

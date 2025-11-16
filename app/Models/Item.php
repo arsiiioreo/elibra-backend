@@ -19,6 +19,7 @@ class Item extends Model
         'call_number',
         'item_type_id',
         'language_id',
+        'campus_id',
         'remarks',
         'maintext_raw',
     ];
@@ -66,4 +67,10 @@ class Item extends Model
     public function newspaper() {
         return $this->hasOne(Newspaper::class, 'item_id');
     }
+
+    public function campus()
+    {
+        return $this->belongsTo(Campus::class, 'campus_id');
+    }
+
 }
