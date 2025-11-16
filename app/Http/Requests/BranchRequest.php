@@ -23,8 +23,10 @@ class BranchRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'id' => 'nullable',
             'name' => 'required|min:8',
             'contact_info' => 'nullable',
+            'campus_id' => 'nullable',
             'department_id' => 'nullable',
             'opening_hour' => 'required',
             'closing_hour' => 'required',

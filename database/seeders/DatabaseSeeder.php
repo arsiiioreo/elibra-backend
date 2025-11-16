@@ -16,15 +16,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CampusSeeder::class,
             CategorySeeder::class,
-            DepartmentSeeder::class,
+            // DepartmentSeeder::class,
             HolidaysSeeder::class,
             PublisherSeeder::class,
             ItemTypeSeeder::class,
             LanguageSeeder::class,
             LoanModesSeeder::class,
-            ItemSeeder::class,
             PatronTypeSeeder::class,
             SuperAdminSeeder::class,
+
+            ItemSeeder::class,
             TestUser::class,
         ]);
     }

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AcquisitionRequestController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AttendanceLogController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\OTPVerifier;
 use App\Http\Controllers\BranchController;
@@ -11,7 +13,10 @@ use App\Http\Controllers\ItemTypesController;
 use App\Http\Controllers\PatronTypesController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\ProgramsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserLogController;
+use App\Models\AcquisitionRequest;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
@@ -59,23 +64,32 @@ Route::post('/updateCampus', [CampusController::class, 'update'])->middleware('j
 Route::post('/deleteCampus', [CampusController::class, 'delete'])->middleware('jwt.auth', 'role:0'); // ♥
 
 // Department Routes    
-Route::get('/all-d', [DepartmentController::class, 'all']);  // ♥
-Route::post('/addDepartment', [DepartmentController::class, 'add']); // ♥
-Route::post('/updateDepartment', [DepartmentController::class, 'update']); // ♥
-Route::post('/deleteDepartment', [DepartmentController::class, 'delete']); // ♥
+Route::group(['prefix' => '/department'], function () {
+    // Route::get('/all-d', [DepartmentController::class, 'all']); 
+    Route::get('/read/{id}', [DepartmentController::class, 'details'])->middleware('jwt.auth', 'role:0,1');  // ♥
+    Route::post('/create', [DepartmentController::class, 'add'])->middleware('jwt.auth', 'role:0,1');  // ♥
+    Route::post('/update', [DepartmentController::class, 'update']); // ♥
+    Route::post('/delete', [DepartmentController::class, 'delete']); // ♥
+
+});
 
 // Program Routes
-Route::get('/all-p', [ProgramController::class, 'all']); // ♥
-Route::post('/addProgram', [ProgramController::class, 'add']); // ♥
+Route::group(['prefix' => 'program'], function () {
+    Route::get('/read/{id}', [ProgramsController::class, 'details']); // ♥
+    Route::post('/create', [ProgramsController::class, 'add']); // ♥
+
+});
+
 Route::post('/updateProgram', [ProgramController::class, 'update']); // ♥
 Route::post('/deleteProgram', [ProgramController::class, 'delete']); // ♥
 
 // Branches Routes
 Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], function () { // ♥
-    Route::get('/read/{campus_id}', [BranchController::class, 'all']); // ♥
+    Route::get('/all', [BranchController::class, 'all']); // ♥
+    Route::get('/read/{campus_id}', [BranchController::class, 'get']); // ♥
     Route::post('/create', [BranchController::class, 'add']); // ♥
     Route::post('/update', [BranchController::class, 'update']); // ♥
-    Route::post('/delete', [BranchController::class, 'delete']); // ♥
+    Route::delete('/delete', [BranchController::class, 'delete']); // ♥
 }); 
 
 // Patron Types
@@ -84,49 +98,60 @@ Route::get('/patron-types', [PatronTypesController::class, 'index']); // ♥
 
 // Item Management
 Route::group(['prefix' => '/item'], function () {
-    Route::get('/get', [ItemController::class, 'index']);
+    Route::get('/get', [ItemController::class, 'index']); // ♥
+    Route::get('/get/{id}', [ItemController::class, 'thisItem']); // ♥
     Route::post('/add', [ItemController::class, 'create']); // ♥
+});
+
+
+// Acquisition Requests
+Route::group(['prefix' => '/acquisition'], function () {
+    Route::post('/request', [AcquisitionRequestController::class, 'createRequest']);
+    Route::get('/get', [AcquisitionRequestController::class, 'index']);
+});
+
+
+Route::get('patron/logs', [UserLogController::class, 'index']);
+
+
+// Attendance Log Management
+Route::group(['prefix' => '/attendance'], function () {
+    Route::post('/record', [AttendanceLogController::class, 'record']);
+    Route::get('/logs', [AttendanceLogController::class, 'logs']);
+});
+
+
+
+Route::get('/item-type/get', [ItemTypesController::class, 'read']); // ♥
+
+Route::group(['prefix' => '/item-type'], function () {
+    Route::post('/add', [ItemTypesController::class, 'create'])->middleware('jwt.auth', 'role:0,1'); // ♥
+    Route::put('/edit', [ItemTypesController::class, 'update'])->middleware('jwt.auth', 'role:0,1'); // ♥
+    Route::delete('/delete/{id}', [ItemTypesController::class, 'delete'])->middleware('jwt.auth', 'role:0,1');
+    Route::put('/restore/{id}', [ItemTypesController::class, 'restore'])->middleware('jwt.auth', 'role:0,1');
+    // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
 });
 
 
 
 
-
-
-
-
-
-
-
-
-
-
 // Admin Routes
-Route::group(['middleware' => ['jwt.auth', 'role:0']], function () {
-    Route::post('/item-type/add', [ItemTypesController::class, 'create']); // ♥
-    Route::get('/item-type/get', [ItemTypesController::class, 'read']); // ♥
-    Route::put('/item-type/edit', [ItemTypesController::class, 'update']); // ♥
-    Route::delete('/item-type/delete/{id}', [ItemTypesController::class, 'delete']);
-    Route::put('/item-type/restore/{id}', [ItemTypesController::class, 'restore']);
-    // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
+Route::group(['prefix' => '/a', 'middleware' => ['jwt.auth', 'role:0']], function () { // Admin Routes with prefix /a
+    Route::get('/users',[UserController::class, 'index'] ); // Display all users ♥
 
-    Route::group(['prefix' => '/a'], function () { // Admin Routes with prefix /a
-        Route::get('/users',[UserController::class, 'index'] ); // Display all users ♥
+    Route::group(['prefix' => '/user'], function () { // Admin User Management Routes with prefix /a/user ♥
+        Route::get('/details/{id}',[UserController::class, 'details'] ); // Get details of a specific user ♥
+        Route::get('/approve/{id}',[UserController::class, 'approveUser'] ); // Lets Admin approve a user's registration approval ♥
+        Route::get('/reject/{id}',[UserController::class, 'rejectUser'] ); // Lets Admin approve a user's registration approval ♥
+        Route::post("/update/{id}", [UserController::class, 'updateInfo']); // ♥
+        Route::post('/create',[UserController::class, 'create'] );
+        Route::delete('/delete/{id}',[UserController::class, 'destroy'] );
 
-        Route::group(['prefix' => '/user'], function () { // Admin User Management Routes with prefix /a/user ♥
-            Route::get('/details/{id}',[UserController::class, 'details'] ); // Get details of a specific user ♥
-            Route::get('/approve/{id}',[UserController::class, 'approveUser'] ); // Lets Admin approve a user's registration approval ♥
-            Route::get('/reject/{id}',[UserController::class, 'rejectUser'] ); // Lets Admin approve a user's registration approval ♥
-            Route::post("/update/{id}", [UserController::class, 'updateInfo']); // ♥
-
-            
-            // Route::post('/create',[UserController::class, 'create'] );
-            // Route::put('/update/{id}',[UserController::class, 'update'] );
-            // Route::delete('/delete/{id}',[UserController::class, 'destroy'] );
-            // Route::put('/restore/{id}',[UserController::class, 'restore'] );
-        });
+        Route::put('/restore/{id}',[UserController::class, 'restore'] );
         
+        // Route::put('/update/{id}',[UserController::class, 'update'] );
     });
+    
 });
 
 

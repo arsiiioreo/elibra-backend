@@ -10,6 +10,6 @@ class PatronTypesController extends Controller
     public function index() {
         $patronTypes = PatronTypes::all();
         
-        return response()->json($patronTypes);
+        return response()->json(["data" => $patronTypes]);
     }
 }

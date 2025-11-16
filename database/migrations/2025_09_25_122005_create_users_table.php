@@ -21,7 +21,6 @@ return new class extends Migration
             $table->string('contact_number', 13)->nullable();
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('username')->unique()->nullable();
             $table->string('password')->nullable();
 
             $table->enum('role', ['0', '1', '2'])->default('2'); // 0. Admin, 1. Librarian, 2. Patron

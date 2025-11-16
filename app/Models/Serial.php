@@ -9,6 +9,7 @@ class Serial extends Model
     protected $fillable = [
         'item_id',
         'volume',
+        'isbn_issn',
         'issue',
         'pages',
         'doi'

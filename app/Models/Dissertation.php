@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Thesis extends Model
+class Dissertation extends Model
 {
     protected $fillable = [
         'item_id',

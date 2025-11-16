@@ -2,20 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book;
 use App\Models\Item;
 use App\Models\ItemTypes;
-use App\Models\Newspaper;
 use App\Services\ItemCatalogService;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ItemController extends Controller
 {
-
-
     protected $catalog;
 
     public function __construct(ItemCatalogService $catalog)
@@ -26,32 +20,43 @@ class ItemController extends Controller
     private function validation(Request $request): array
     {
         $validated = Validator::make($request->all(), [
-            'query'          => 'nullable|string|max:255',
-            'sort'           => 'nullable|in:title,year_published,created_at',
-            'order'          => 'nullable|in:asc,desc',
-            'item_type_id'   => 'nullable|integer|exists:item_types,id',
-            'item_type_id'   => 'nullable|array',
-            'language_id*'    => 'nullable|integer|exists:languages,id',
-            'year_from'      => 'nullable|digits:4|integer|min:1000|max:' . date('Y'),
-            'campus_id'      => 'nullable|integer|exists:campuses,id',
-            'year_to'        => 'nullable|digits:4|integer|min:1000|max:' . (date('Y') + 1),
-            'page'           => 'nullable|integer|min:1',
-            'entries'        => 'nullable|integer|min:1|max:100',
+            /*OLD [ REVIEW FOR CHANGES ]*/
+            // 'query'          => 'nullable|string|max:255',
+            // 'sort'           => 'nullable|in:title,year_published,created_at',
+            // 'order'          => 'nullable|in:asc,desc',
+            // 'item_type_id'   => 'nullable|integer|exists:item_types,id',
+            // 'item_type_id'   => 'nullable|array',
+            // 'language_id*'    => 'nullable|integer|exists:languages,id',
+            // 'year_from'      => 'nullable|digits:4|integer|min:1000|max:' . date('Y'),
+            // 'campus_id'      => 'nullable|integer|exists:campuses,id',
+            // 'year_to'        => 'nullable|digits:4|integer|min:1000|max:' . (date('Y') + 1),
+            // 'page'           => 'nullable|integer|min:1',
+            // 'entries'        => 'nullable|integer|min:1|max:100',
+
+            /*NEW [ REVIEW FOR CHANGES ]*/
+            'query' => 'nullable|string|max:255',
+            'sort' => 'nullable|in:title,year_published,created_at',
+            'order' => 'nullable|in:asc,desc',
+            'type' => 'nullable|integer|exists:item_types,id',
+            'language_id' => 'nullable|integer|exists:languages,id',
+            'year_from' => 'nullable|digits:4|integer|min:1000|max:'.date('Y'),
+            'year_to' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
+            'page' => 'nullable|integer|min:1',
+            'entries' => 'nullable|integer|min:1|max:100',
         ])->validate();
 
         return array_merge([
-            'query'          => null,
-            'sort'           => 'created_at',
-            'order'          => 'desc',
-            'item_type_id'   => '',
-            'language_id'    => '',
-            'year_from'      => null,
-            'year_to'        => null,
-            'page'           => 1,
-            'entries'        => 25,
+            'query' => null,
+            'sort' => 'title',
+            'order' => 'asc',
+            'type' => '',
+            'language_id' => '',
+            'year_from' => null,
+            'year_to' => null,
+            'page' => 1,
+            'entries' => 25,
         ], $validated);
     }
-
 
     public function index(Request $request)
     {
@@ -59,7 +64,7 @@ class ItemController extends Controller
 
         $items = Item::query()
             ->whereNull('deleted_at')
-            ->with('publisher', 'itemType', 'language', 'book', 'thesis', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper') // Add 
+            ->with('publisher', 'itemType', 'language', 'book', 'thesis', 'dissertation','audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
             ->when($validated['query'], function ($q, $search) {
                 $terms = explode(' ', $search);
                 foreach ($terms as $term) {
@@ -72,8 +77,8 @@ class ItemController extends Controller
                     });
                 }
             })
-            ->when(isset($validated['item_type_id']) && $validated['item_type_id*'] !== '', function ($q) use ($validated) {
-                $q->where('item_type_id', $validated['item_type_id']);
+            ->when(isset($validated['type']) && $validated['type'] !== '', function ($q) use ($validated) {
+                $q->where('item_type_id', $validated['type']);
             })
             ->when(isset($validated['language_id']) && $validated['language_id'] !== '', function ($q) use ($validated) {
                 $q->where('language_id', $validated['language_id']);
@@ -86,8 +91,10 @@ class ItemController extends Controller
                     $q->where('year_published', '<=', $validated['year_to']);
                 }
             })
-            ->orderBy($validated['sort'], $validated['order'])
-            ->paginate(
+            ->orderBy($validated['sort'], $validated['order']);
+
+        if (isset($request->paginate) === false) {
+            return response()->json($items->paginate(
                 $validated['entries'],
                 [
                     'id',
@@ -104,12 +111,14 @@ class ItemController extends Controller
                 ],
                 'page',
                 $validated['page']
-            );
-
-        return response()->json($items);
+            ));
+        } 
+        
+        return response()->json(["data" => $items->get()]);
     }
 
     //For mobile App
+    /*[ UNDER REVIEW FOR POSSIBLE ADJUSTMENT ]*/
     public function indexMobile(Request $request)
     {
         $validated = $this->validation($request);
@@ -174,6 +183,16 @@ class ItemController extends Controller
             return response()->json($items);
     }
 
+    /*NEW [ NEWLY ADDED FUNCTION - UNDER REVIEW ]*/
+    public function thisItem($id)
+    {
+        $item = Item::find($id)->load(
+            'itemType', 'language', 'book', 'thesis',
+            'audio', 'serial', 'periodical', 'electronic',
+            'vertical', 'newspaper'); // Load item's additional information
+
+        return response()->json($item);
+    }
 
     public function create(Request $request)
     {
@@ -181,7 +200,7 @@ class ItemController extends Controller
         $baseRules = [
             'title' => 'required|string|max:255',
             'publisher_id' => 'nullable|integer|exists:publishers,id',
-            'year_published' => 'nullable|digits:4|integer|min:1000|max:' . (date('Y') + 1),
+            'year_published' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
             'isbn_issn' => 'nullable|string|max:20',
             'edition' => 'nullable|string|max:100',
             'call_number' => 'required|string|max:100',
@@ -199,7 +218,7 @@ class ItemController extends Controller
         $fullData = $request->all();
 
         if ($itemType) {
-            $serviceClass = 'App\\Services\\ItemTypes\\' . ucfirst($this->normalizeTypeName($itemType->name)) . 'Service';
+            $serviceClass = 'App\\Services\\ItemTypes\\'.ucfirst($this->normalizeTypeName($itemType->name)).'Service';
             if (class_exists($serviceClass)) {
                 $service = app($serviceClass);
                 if (method_exists($service, 'rules')) {
@@ -215,14 +234,15 @@ class ItemController extends Controller
 
         return response()->json([
             'message' => 'Item created successfully',
-            'data' => $item->load('book', 'thesis', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper') // load what's relevant
+            'data' => $item->load('book', 'thesis', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper'), // load what's relevant
         ], 201);
     }
 
     protected function normalizeTypeName(string $name): string
     {
         $parts = preg_split('/[^A-Za-z0-9]+/', $name);
-        $parts = array_map(fn($p) => ucfirst(strtolower($p)), array_filter($parts));
+        $parts = array_map(fn ($p) => ucfirst(strtolower($p)), array_filter($parts));
+
         return implode('', $parts);
     }
 }

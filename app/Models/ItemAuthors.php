@@ -13,4 +13,12 @@ class ItemAuthors extends Model
         'item_id',
         'author_id',
     ];
+
+    public function author() {
+        return $this->belongsTo(Author::class, 'author_id');
+    }
+
+    public function item() {
+        return $this->belongsTo(Item::class, 'item_id', 'id');
+    }
 }

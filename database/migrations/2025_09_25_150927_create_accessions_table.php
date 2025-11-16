@@ -15,14 +15,16 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('item_id');
             $table->string('accession_number');
-            $table->unsignedBigInteger('branch_id');
-            $table->enum('status', ['available', 'on_load', 'lost', 'missing', 'archived'])->default('available');
             $table->string('shelf_location');
+            $table->enum('status', ['available', 'on_load', 'lost', 'missing', 'archived'])->default('available');
+            $table->unsignedBigInteger('branch_id');
+            
             $table->dateTime('date_acquired');
+            
             $table->unsignedBigInteger('acquisition_id');
-            $table->float('price');
             $table->string('remarks')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

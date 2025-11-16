@@ -14,6 +14,9 @@ return new class extends Migration
         Schema::create('books', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('item_id');
+            $table->string('isbn_issn')->nullable();
+            $table->unsignedBigInteger('categories_id');
+            $table->string('edition')->nullable();
             $table->integer('pages')->nullable();
             $table->timestamps();
         });

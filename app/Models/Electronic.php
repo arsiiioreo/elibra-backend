@@ -9,6 +9,7 @@ class Electronic extends Model
     protected $fillable = [
         'item_id',
         'file_size',
+        'isbn_issn',
         'access_url',
     ];
     

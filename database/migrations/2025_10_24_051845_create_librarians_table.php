@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('electronics', function (Blueprint $table) {
+        Schema::create('librarians', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
-            $table->string('isbn_issn')->nullable();
-            $table->string('file_size')->nullable();
-            $table->string('access_url')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->string('username')->unique()->nullable();
+            $table->unsignedBigInteger('branch_id');
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('electronics');
+        Schema::dropIfExists('librarians');
     }
 };

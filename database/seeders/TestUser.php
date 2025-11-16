@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Patron;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class TestUser extends Seeder
 {
@@ -16,117 +15,52 @@ class TestUser extends Seeder
     {
         $users = [
             [
-                'last_name' => 'Dela Cruz',
-                'middle_initial' => 'M',
-                'first_name' => 'Betsie',
-                'sex' => 'female',
-                'email' => 'betsie.m.dela-cruz@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '0',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Concordia',
-                'middle_initial' => 'R',
-                'first_name' => 'Merelisa',
-                'sex' => 'female',
-                'email' => 'merelisa.r.concordia@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Lagmay',
-                'middle_initial' => 'J',
-                'first_name' => 'Aileen',
-                'sex' => 'female',
-                'email' => 'aileen.j.lagmay@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Villanueva',
+                'last_name' => 'User',
                 'middle_initial' => 'D',
-                'first_name' => 'Juliet',
-                'sex' => 'female',
-                'email' => 'juliet.d.villanueva@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Villanueva',
-                'middle_initial' => 'A',
-                'first_name' => 'Hyacinth',
-                'sex' => 'female',
-                'email' => 'hyacinth.a.villanueva@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Fermin',
-                'middle_initial' => 'L',
-                'first_name' => 'Christian',
+                'first_name' => 'Test',
                 'sex' => 'male',
-                'email' => 'christian.l.fermin@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Layugan',
-                'middle_initial' => 'B',
-                'first_name' => 'Lorna',
-                'sex' => 'female',
-                'email' => 'lorna.b.layugan@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Malab',
-                'middle_initial' => 'B',
-                'first_name' => 'Lady',
-                'sex' => 'female',
-                'email' => 'lady.b.malab@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
-                'role' => '1',
-                'pending_registration_approval' => '1',
-                'status' => '0'
-            ],
-            [
-                'last_name' => 'Gabriel',
-                'middle_initial' => 'D',
-                'first_name' => 'John Clint',
-                'sex' => 'male',
-                'email' => 'johnclint.d.gabriel@isu.edu.ph',
-                'contact_number' => null,
-                'password' => Hash::make('isuelibra2025'),
+                'contact_number' => '09123456789',
+                'email' => 'testuser',
+                'password' => 'isuelibra2025',
                 'role' => '2',
                 'pending_registration_approval' => '1',
-                'status' => '0'
+
+                'id_number' => 220000,
+                'ebc' => '',
+                'program_id' => 1,
+                'patron_type_id' => '2',
+                'address' => 'Alicia, Isabela',
             ],
         ];
 
-        foreach ($users as $user) {
-            User::create($user);
+        for ($i= 0; $i < 50; $i++) { 
+            foreach ($users as $user) {
+                $u = User::create([
+                    'last_name' => $user['last_name'],
+                    'middle_initial' => $user['middle_initial'],
+                    'first_name' => $user['first_name'] . $i,
+                    'sex' => $user['sex'],
+                    'contact_number' => $user['contact_number'],
+                    'email' => $user['email'] . '@isu.edu.ph',
+                    'password' => $user['password'],
+                    'role' => $user['role'],
+                    'pending_registration_approval' => $user['pending_registration_approval'],
+                ]);
+    
+                $u->update([
+                    'first_name' => $user['first_name'].$u->id,
+                    'email' => $user['email'].$u->id.'@isu.edu.ph',
+                ]);
+    
+                Patron::create([
+                    'user_id' => $u->id,
+                    'id_number' => $user['id_number'] + $u->id,
+                    'program_id' => $user['program_id'],
+                    'patron_type_id' => $user['patron_type_id'],
+                    'address' => $user['address'],
+                ]);
+            }
         }
+
     }
 }

@@ -9,6 +9,9 @@ class Book extends Model
     protected $fillable = [
         'item_id',
         'pages',
+        'isbn_issn',
+        'edition',
+        'categories_id'
     ];
     
     public function item()

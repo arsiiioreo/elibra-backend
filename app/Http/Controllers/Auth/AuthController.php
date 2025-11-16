@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\OTPController;
 use App\Http\Requests\RegistrationRequest;
-use App\Mail\EmailVerification;
 use App\Models\ActivityLog;
+use App\Models\Librarian;
 use App\Models\OTP;
 use App\Models\Patron;
 use App\Models\PatronTypes;
@@ -14,12 +13,11 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Tymon\JWTAuth\Exceptions\JWTException;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Auth\OTPVerifier;
+use Illuminate\Support\Str;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -27,83 +25,46 @@ class AuthController extends Controller
     {
         $auth = auth('api')->user();
 
-        // Default null values
-        $campus = null;
-        $branch = null;
-
-        if ($auth->isAdmin) {
-            $campus = ['name' => "Global"];
-            $branch = ['name' => "University Libary"];
-        } else if ($auth->isLibrarian) {
-            $campus = ['name' => "Echague Campus"];
-        }else if ($auth->patron && $auth->campus) {
-
-        // $campus = [
-        //     // 'id' => $auth->patron->campus->id,
-        //     'name' => $auth->patron->campus->name,
-        //     'abbrev' => $auth->patron->campus->abbrev ?? null,
-        //     'address' => $auth->patron->campus->address ?? null,
-        // ];
-
-        // Check if patron_type is Guest (3)
-            $guestType = PatronTypes::where('name', 'Guest')->first()->id;
-
-            if ($auth->patron->patron_type_id == $guestType) {
-                $externalOrganization = [
-                    'name' => $auth->patron->external_organization,
-                ];
-            } else if ($auth->campus) {
-                $campus = [
-                    'name' => $auth->campus->name,
-                    'abbrev' => $auth->campus->abbrev ?? null,
-                    'address' => $auth->campus->address ?? null,
-                ];
-            }
-        }
-     
-
-        $pfp = $auth->profile_photos?->path ? asset('storage/' . $auth->profile_photos?->path) : asset('logo.png');
-
-        $profilePhoto = $auth->profile_photos ? [
-            'id' => $auth->profile_photos->id,
-            'path' => asset( $auth->profile_photos->path),
-            'original_name' => $auth->profile_photos->original_name,
-            'stored_name' => $auth->profile_photos->stored_name,
-        ] : null;
-
         $data = [
-            'name' => $auth->last_name . ', ' . $auth->first_name . ' ' . ($auth->middle_initial ? $auth->middle_initial . '.' : ''),
+            // Personal Info
+            'name' => $auth->last_name.', '.$auth->first_name.' '.($auth->middle_initial ? $auth->middle_initial.'.' : ''),
             'last_name' => $auth->last_name,
             'middle_initial' => $auth->middle_initial ?? 'N/A',
             'first_name' => $auth->first_name,
             'sex' => $auth->sex,
+
+            // Contact Info
             'contact_number' => $auth->contact_number,
             'email' => $auth->email,
+
+            // Account Info
             'email_verified_at' => $auth->email_verified_at,
-            'date_joined' => $auth->patron?->date_joined,
-            'profile_picture' => $pfp,
-            'profile_photo' => $profilePhoto,
-            'campus' => $campus,
-            'id_number' => $auth->patron?->id_number,  
-            'address' => $auth->patron?->address,
-            'ebc' => $auth->patron?->ebc ?? 'N/A',
+            'profile_picture' => $auth->profile_photos?->path ? asset('storage/'.$auth->profile_photos?->path) : asset('logo.png'),
             'role' => $auth->role,
-            'patron_type' => $auth->patron?->patron_type_id,
+
         ];
 
-        //fetch external_org for aliens
-        if ($auth->patron && $auth->patron->patron_type_id == 3) {
-            $data['external_organization'] = $auth->patron->external_organization ?? null;
-        }
+        if ($auth->isAdmin) {
+            $data += [
 
-        // // Conditional append
-        if ($branch) {
-            $data['branch'] = $branch;
+            ];
+
+        } elseif ($auth->isLibrarian) {
+            $data += [
+                'campus' => $auth->librarian->branch->campus,
+                'librarian' => $auth->librarian,
+                "branch" => $auth->librarian->branch
+            ];
+        } elseif ($auth->isPatron) {
+            $data += [
+                'campus' => $auth->campus,
+                'patron' => $auth->patron,
+                'patron_type' => $auth->patron->patron_type,
+            ];
         }
 
         return response()->json($data);
     }
-
 
     public function refresh()
     {
@@ -112,13 +73,13 @@ class AuthController extends Controller
 
         try {
             return response()->json([
-                'status'       => 'success',
+                'status' => 'success',
                 'access_token' => $auth->refresh(),
-                'token_type'   => 'bearer',
+                'token_type' => 'bearer',
             ]);
         } catch (JWTException $e) {
-            throw $e;
-            return response()->json(['error' => 'Token invalid or expired'], 401);
+            // throw $e;
+            return response()->json(['error' => 'Token invalid or expired', 'additional_error' => $e->getMessage()], 401);
         }
     }
 
@@ -134,10 +95,10 @@ class AuthController extends Controller
 
         try {
             // $user = auth('api')->user();
-            
+
             // if (!$user || !($user instanceof User)) {
-                //     return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
-                // }
+            //     return response()->json(['status' => 'error', 'message' => 'Unauthorized.'], 401);
+            // }
 
             $otpRecord = OTP::where('otp_code', $validated['otp'])
                 ->where('otp_token', $validated['token'])
@@ -151,6 +112,10 @@ class AuthController extends Controller
 
             // dd(' token=' . $token . ' otp=' . $otp);
 
+            Log::info('Verify Email Request', [
+                'token' => $validated['token'],
+                'otp' => $validated['otp'],
+            ]);
 
             if ($otpRecord) {
                 $user = User::find($otpRecord->user_id);
@@ -165,75 +130,70 @@ class AuthController extends Controller
 
                 // return response()->json(['status' => 'success'], 200);
 
-                return redirect()->away(env('FRONTEND_URL') . '/email-verified');
+                return redirect()->away(env('FRONTEND_URL').'/email-verified');
             } else {
                 return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
             }
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['status' => 'error', 'message' => 'Something went wrong.' . $e->getMessage()], 500);
+
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong.'.$e->getMessage()], 500);
         }
     }
 
-public function verifyPatronEmail(Request $request)
-{
-    DB::beginTransaction();
-    try {
-        $otpRecord = OTP::where('otp_code', $request->otp)
-            ->where('otp_token', $request->code)
-            ->where('expires_at', '>', now())
-            ->first();
+    public function verifyPatronEmail(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $otpRecord = OTP::where('otp_code', $request->otp)
+                ->where('otp_token', $request->code)
+                ->where('expires_at', '>', now())
+                ->first();
 
-        if ($otpRecord) {
-            $user = User::find($otpRecord->user_id);
-            $user->email_verified_at = now();
-            $user->save();
+            if ($otpRecord) {
+                $user = User::find($otpRecord->user_id);
+                $user->email_verified_at = now();
+                $user->save();
 
-            $otpRecord->delete(); // Invalidate the OTP after successful verification
-            DB::commit();
+                $otpRecord->delete(); // Invalidate the OTP after successful verification
+                DB::commit();
 
-            return response()->json(['status' => 'success'], 200);
-            // $otp = $request->query('otp');
-            // $token = $request->query('token');
-            // $email = $request->query('email');
-            // return redirect()->away(env('MOBILE_LOGIN') . '/otp-verification?otp=' . $otp . '&token=' . $token . '&email=' . urlencode($email));
+                return response()->json(['status' => 'success'], 200);
+            } else {
+                return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
 
-        } else {
-            return response()->json(['status' => 'error', 'message' => 'Invalid or expired OTP.'], 400);
+            return response()->json(['status' => 'error', 'message' => 'Something went wrong: '.$e->getMessage()], 500);
         }
-    } catch (Exception $e) {
-        DB::rollBack();
-        return response()->json(['status' => 'error', 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
     }
-}
-    
- // Login
+
+    // Login
     public function login()
     {
         $user = User::where('email', request('user'))->first() ??
-            Patron::where('id_number', request('user'))->first()?->user;
+            Patron::where('id_number', request('user'))->first()?->user ?? Librarian::where('username', request('user'))->first()?->user;
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'status' => 'error',
-                'errors' => [
-                    'users' => 'User not found.'
-                ]
-            ], 404);
+                'message' => 'User not found.',
+            ]);
+
         }
 
         if ($user && $user->login_attempt >= 5) {
-            return response()->json(["message" => "Too many failed login attempts, please contact your administrator to reset your password or resolve this issue."], 423);
+            //return response()->json(["message" => "Too many failed login attempts, please contact your administrator to reset your password or resolve this issue."], 423);
             // return response()->json(["message" => "locked"], 403);
+            return response()->json(['message' => 'Too many failed login attempts, please contact your administrator to reset your password or resolve this issue.'], 403);
         }
 
         if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
-            
-
             if ($user && $user->pending_registration_approval) {
                 return response()->json(['status' => 'error', 'errors' => [
-                    'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.'
-                ]], 403);
+                    'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.',
+                ]]);
             }
             $token = auth('api')->login($user);
 
@@ -256,7 +216,7 @@ public function verifyPatronEmail(Request $request)
 
             if ($user->role != 0) {
                 $user->login_attempt += 1;
-                
+
                 if ($user->login_attempt == 5) {
                     $user->status = '1';
                     ActivityLog::create([
@@ -266,15 +226,13 @@ public function verifyPatronEmail(Request $request)
                     ]);
                 }
                 $user->save();
-
             }
 
-            return response()->json(['status' => 'error', 'errors' => [
-                'users' => 'Incorrect password, please try again.'
-            ]], 401);
+            return response()->json(['status' => 'error', 
+                'message' => 'Incorrect password, please try again.',
+            ]);
         }
     }
-
 
     // Registration API for Patrons
     public function register(RegistrationRequest $request)
@@ -300,7 +258,7 @@ public function verifyPatronEmail(Request $request)
 
             $user_patron = Patron::create([
                 'user_id' => $user->id,
-                'patron_type_id' => $request->patron_type_id,
+                'patron_type_id' => $request->validated()['patron_type_id'],
                 'status' => 'active', // Set status to inactive for Guest patrons
             ]);
 
@@ -308,19 +266,19 @@ public function verifyPatronEmail(Request $request)
 
             $guestType = PatronTypes::where('name', 'Guest')->first()->id;
 
-            if ($request->patron_type_id== $guestType) {
+            if ($request->validated()['patron_type_id'] == $guestType) {
                 $user->campus_id = null;
                 $user->save();
 
-                $user_patron->external_organization = $request->external_organization;
-                $user_patron->ebc = sprintf(    
+                $user_patron->external_organization = $request->validated()['external_organization'];
+                $user_patron->ebc = sprintf(
                     'EBC%s%s%s',
                     Str::padLeft($user_patron->id, 3, '0'), // ensure 3-digit campus_id
                     Str::padLeft($user->id, 5, '0'),       // ensure 5-digit user_id
                     Str::upper(Str::random(5))            // random suffix for uniqueness
                 );
             } else {
-                $user->campus_id = $request->campus;
+                $user->campus_id = $request->validated()['campus'];
                 $user->save();
 
                 $user_patron->ebc = sprintf(
@@ -330,7 +288,7 @@ public function verifyPatronEmail(Request $request)
                     Str::upper(Str::random(5))             // random suffix for uniqueness
                 );
             }
-            $user_patron->id_number = $request->id_number; // ID number for guest and non-guest
+            $user_patron->id_number = $request->validated()['id_number']; // ID number for guest and non-guest
             $user_patron->save();
 
             $token = auth('api')->login($user);
@@ -345,19 +303,36 @@ public function verifyPatronEmail(Request $request)
             return $this->respondWithToken($token);
         } catch (Exception $e) {
             DB::rollBack();
+
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 
-    public function logout() {
-        ActivityLog::create([
-            'user_id' => auth('api')->user()->id,
-            'title' => 'Logout',
-            'description' => 'You logged out.',
-        ]);
-        auth('api')->logout();
+    public function logout()
+    {
+        try {
+            $user = auth('api')->user();
+            if ($user) {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'title' => 'Logout',
+                    'description' => 'You logged out.',
+                ]);
+            }
 
-        return response()->json(['status' => 'success', 'message' => 'Successfully logged out']);
+            auth('api')->logout();
+
+            return response()->json(['status' => 'success', 'message' => 'Successfully logged out']);
+        } catch (TokenExpiredException $e) {
+            // Decode token manually and invalidate
+            $token = JWTAuth::getToken();
+            $payload = JWTAuth::manager()->decode($token, false); // skip expiry check
+            JWTAuth::invalidate($token);
+
+            return response()->json(['status' => 'success', 'message' => 'Logged out (expired token handled)']);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Failed to logout', 'error' => $e->getMessage()]);
+        }
     }
 
     // Response with Token

@@ -16,8 +16,9 @@ return new class extends Migration
             $table->string('purchase_order')->nullable();
             $table->string('dealer');
             $table->enum('acquisition_mode', ['purchased', 'donated', 'gift', 'exchange']);
-            $table->dateTime('acquistion_date');
-            $table->float('total_cost');
+            $table->dateTime('acquisition_date');
+            // $table->float('total_cost');
+            $table->float('price')->default(0);
             $table->string('remarks')->nullable();
             $table->timestamps();
         });
