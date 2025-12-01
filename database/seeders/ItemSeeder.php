@@ -27,6 +27,11 @@ class ItemSeeder extends Seeder
      */
     public function run(): void
     {
+         $campusIds = Campus::pluck('id')->toArray();
+            if(empty($campusIds)){
+                dd('No campuses found. Please seed campuses first.');
+            }   
+            
         // Generate 50 random items
         for ($i = 1; $i < 20; $i++) {
             $isbn = '978'.str_pad(rand(100000000, 999999999), 9, '0', STR_PAD_LEFT);

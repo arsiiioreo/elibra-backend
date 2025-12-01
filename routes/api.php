@@ -44,6 +44,7 @@ Route::middleware(['jwt.auth'])->group(function () {
 
 // Authentication Routes
 Route::post('/auth/login', [AuthController  ::class, 'login']); // ♥
+Route::post('/auth/mobile-login', [AuthController  ::class, 'mobile_login']); // ♥
 Route::get('/auth/logout', [AuthController  ::class, 'logout']); // ♥
 Route::post('/auth/register', [AuthController::class, 'register']); // ♥
 Route::get('auth/refresh', [AuthController::class, 'refresh']); // ♥

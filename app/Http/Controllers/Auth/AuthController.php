@@ -41,7 +41,9 @@ class AuthController extends Controller
             'email_verified_at' => $auth->email_verified_at,
             'profile_picture' => $auth->profile_photos?->path ? asset('storage/'.$auth->profile_photos?->path) : asset('logo.png'),
             'role' => $auth->role,
-
+            'id_number' => $auth->patron?->id_number ?? 'No ID Number',
+            'ebc' => $auth->patron?->ebc ?? 'N/A',
+            'date_joined' => $auth->created_at->toDateTimeString(),
         ];
 
         if ($auth->isAdmin) {
@@ -59,10 +61,11 @@ class AuthController extends Controller
             $data += [
                 'campus' => $auth->campus,
                 'patron' => $auth->patron,
-                'patron_type' => $auth->patron->patron_type,
+                'patron_type' => $auth->patron->patron_type_id,
             ];
         }
 
+        Log::info('User API data:', $data);
         return response()->json($data);
     }
 
@@ -233,9 +236,93 @@ class AuthController extends Controller
             ]);
         }
     }
+        // Login
+    public function mobile_login()
+    {
+        $user = User::where('email', request('user'))->first() ??
+            Patron::where('id_number', request('user'))->first()?->user ?? Librarian::where('username', request('user'))->first()?->user;
+
+        if (! $user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found.',
+            ]);
+
+        }
+
+        // Block if pending BEFORE authentication
+        if ($user->pending_registration_approval) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Account is pending approval.',
+            ], 403);
+        }
+
+        // Block if locked
+        if ($user->login_attempt >= 5) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Account locked.',
+            ], 423);
+        }
+
+        $authSuccess = auth('api')->attempt([
+            'email' => $user->email,
+            'password' => request('password'),
+        ]);
+
+        if (!$authSuccess) {
+            // INCORRECT PASSWORD
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'title' => 'Invalid Login',
+                'description' => 'Incorrect password, attempt failed.',
+            ]);
+
+            if ($user->role != 0) {
+                $user->login_attempt++;
+
+                if ($user->login_attempt >= 5) {
+                    $user->status = 1;
+
+                    ActivityLog::create([
+                        'user_id' => $user->id,
+                        'title' => 'Account Locked',
+                        'description' => 'Account locked due to multiple failed attempts.',
+                    ]);
+                }
+
+                $user->save();
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Incorrect password, please try again.',
+            ], 401);
+        }
+
+        // -------------------------
+        // 5. SUCCESSFUL LOGIN
+        // -------------------------
+        $token = auth('api')->login($user);
+
+        // Reset attempts
+        $user->login_attempt = 0;
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'title' => 'Login',
+            'description' => 'User logged in.',
+        ]);
+
+        return $this->respondWithToken($token);
+        
+    }
+
 
     // Registration API for Patrons
-    public function register(RegistrationRequest $request)
+    public function register(RegistrationRequest $request   )
     {
         DB::beginTransaction();
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\School;
 
 use App\Http\Controllers\Controller;
+// use App\Http\Controllers\Errors\ErrorTranslator;
 use App\Http\Controllers\Errors\ErrorTranslator;
 use App\Models\Campus;
 use Exception;
@@ -84,7 +85,8 @@ class CampusController extends Controller
 
             return response()->json(['status' => 'success', 'message' => 'Successfully added ' . $campus->campus . ' campus.']);
         } catch (Exception $e) {
-            return response()->json(['status' => 'error', 'message' => ErrorTranslator::translateError($e->getCode())]);
+            // return response()->json(['status' => 'error', 'message' => ErrorTranslator::translateError($e->getCode())]);
+            return response()->json(['status' => 'error', 'message' => 'An unexpected error occurred. Please try again later.']);
         }
     }
 

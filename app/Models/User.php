@@ -43,6 +43,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'role',
         'pending_registration_approval',
         'profile_picture',
+        'campus_id',
     ];
 
     protected $hidden = [
@@ -92,5 +93,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function profile_photos()
     {
         return $this->belongsTo(ProfilePhotos::class, 'profile_picture', 'id');
+    }
+    public function campus()
+    {
+        return $this->belongsTo(Campus::class, 'campus_id');
     }
 }
