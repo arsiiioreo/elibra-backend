@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('call_number');
             $table->year('year_published')->nullable();
-            $table->enum('item_type', ['audio', 'book', 'dissertation', 'electronic', 'newspaper', 'periodical', 'serial', 'vertical']);
+            $table->enum('item_type', ['audio', 'book', 'dissertation', 'electronic', 'newspaper', 'periodical', 'serial', 'thesis', 'vertical']);
             
             $table->string('description')->nullable();
             $table->json('maintext_raw')->nullable();

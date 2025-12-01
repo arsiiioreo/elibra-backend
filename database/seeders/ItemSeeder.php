@@ -5,12 +5,10 @@ namespace Database\Seeders;
 use App\Http\Controllers\AccessionsController;
 use App\Models\Acquisition;
 use App\Models\Audio;
-use App\Models\Author;
 use App\Models\Book;
 use App\Models\Dissertation;
 use App\Models\Electronic;
 use App\Models\Item;
-use App\Models\ItemAuthors;
 use App\Models\Newspaper;
 use App\Models\Periodical;
 use App\Models\Serial;
@@ -29,7 +27,11 @@ class ItemSeeder extends Seeder
         // Generate 50 random items
         for ($i = 1; $i < 20; $i++) {
             $isbn = '978'.str_pad(rand(100000000, 999999999), 9, '0', STR_PAD_LEFT);
-            $type = rand(1, 9); // assume you have up to 3 item types
+            $type = ['audio', 'book', 'dissertation', 'electronic', 'newspaper', 'periodical', 'serial', 'thesis', 'vertical']; // assume you have up to 3 item types
+            $categories = ['encyclopedia', 'english',
+                'filipiniana', 'fiction', 'general', 'math',
+                'novel', 'reference', 'science', 'textbook',
+            ];
             $lang = rand(1, 15); // assume you have 4 languages
             $file_size = ['GB', 'MB'];
             $file_type = ['MP3', 'M4A'];
@@ -97,34 +99,35 @@ class ItemSeeder extends Seeder
 
             $item = Item::create([
                 'title' => $title,
-                'publisher_id' => rand(1, 5),
-                'year_published' => rand(1950, 2024),
                 'call_number' => 'CN-'.strtoupper(Str::random(6)),
-                'item_type_id' => $type,
+                'year_published' => rand(1950, 2024),
+                'item_type' => $type[rand(0, 8)],
+                'description' => 'Auto-generated seed data for testing purposes.',
+
                 'language_id' => $lang,
-                'remarks' => 'Auto-generated seed data for testing purposes.',
+                'publisher_id' => rand(1, 5),
             ]);
-            
+
             if ($item->item_type_id == 1) {
                 Book::create([
-                    'item_id' => $item->id,
                     'isbn_issn' => $isbn,
-                    'pages' => rand(25, 500),
+                    'category' => $categories[rand(1, 9)],
                     'edition' => $editions[array_rand($editions)],
-                    'categories_id' => rand(1, 9),
+                    'pages' => rand(25, 500),
+                    'item_id' => $item->id,
                 ]);
             } elseif ($item->item_type_id == 2) {
                 Thesis::create([
-                    'item_id' => $item->id,
                     'abstract' => "This research is generated for testing purposes only, this doesn't exist.",
                     'advisor' => $firstNames[array_rand($firstNames)].' '.$lastNames[array_rand($lastNames)],
+                    'item_id' => $item->id,
                     'program_id' => 1,
                 ]);
             } elseif ($item->item_type_id == 3) {
                 Dissertation::create([
-                    'item_id' => $item->id,
                     'abstract' => "This research is generated for testing purposes only, this doesn't exist.",
                     'advisor' => $firstNames[array_rand($firstNames)].' '.$lastNames[array_rand($lastNames)],
+                    'item_id' => $item->id,
                     'program_id' => 1,
                 ]);
             } elseif ($item->item_type_id == 4) {

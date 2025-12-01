@@ -9,10 +9,8 @@ use App\Http\Controllers\Auth\OTPVerifier;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CampusController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItemController;
-use App\Http\Controllers\ItemTypesController;
 use App\Http\Controllers\LibrarianController;
 use App\Http\Controllers\OpacController;
 use App\Http\Controllers\PatronTypesController;
@@ -80,11 +78,10 @@ Route::group(['prefix' => 'program'], function () {
     Route::post('/create', [ProgramsController::class, 'add']); // ♥
     Route::put('/update', [ProgramsController::class, 'update']);
     Route::delete('/delete/{id}', [ProgramsController::class, 'delete']);
+    Route::post('/updateProgram', [ProgramController::class, 'update']); // ♥
+    Route::post('/deleteProgram', [ProgramController::class, 'delete']); // ♥
 
 });
-
-Route::post('/updateProgram', [ProgramController::class, 'update']); // ♥
-Route::post('/deleteProgram', [ProgramController::class, 'delete']); // ♥
 
 // Branches Routes
 Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], function () { // ♥
@@ -103,7 +100,6 @@ Route::group(['prefix' => '/item'], function () {
     Route::get('/get', [ItemController::class, 'index']); // ♥
     Route::get('/get/{id}', [ItemController::class, 'thisItem']); // ♥
 
-    
     Route::post('/add', [ItemController::class, 'create']); // ♥
 });
 
@@ -134,31 +130,11 @@ Route::group(['prefix' => '/publisher'], function () {
     Route::post('/create', [PublisherController::class, 'create']);
 });
 
-// Item Types
-Route::group(['prefix' => '/item-type'], function () {
-    Route::get('/get', [ItemTypesController::class, 'read']); // ♥
-    Route::post('/add', [ItemTypesController::class, 'create'])->middleware('jwt.auth', 'role:0,1'); // ♥
-    Route::put('/edit', [ItemTypesController::class, 'update'])->middleware('jwt.auth', 'role:0,1'); // ♥
-    Route::delete('/delete/{id}', [ItemTypesController::class, 'delete'])->middleware('jwt.auth', 'role:0,1');
-    Route::put('/restore/{id}', [ItemTypesController::class, 'restore'])->middleware('jwt.auth', 'role:0,1');
-    // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
-});
-
-// Book Categories
-Route::group(['prefix' => '/category'], function () {
-    Route::get('/', [CategoryController::class, 'index']);
-});
-
 // Author
 Route::group(['prefix' => '/author'], function () {
     Route::get('/', [AuthorController::class, 'index']);
+    Route::post('/create', [AuthorController::class, 'create']);
 });
-
-
-
-
-
-
 
 // Special Routes
 
@@ -166,15 +142,10 @@ Route::group(['prefix' => '/opac'], function () {
     Route::get('/', [OpacController::class, 'index']); // ♥
 });
 
-
-
-
-
-
 // Admin Routes
 Route::group(['prefix' => '/a', 'middleware' => ['jwt.auth', 'role:0']], function () { // Admin Routes with prefix /a
     Route::get('/', [AdminController::class, 'dashboard']);
-    
+
     Route::get('/users', [UserController::class, 'index']); // Display all users ♥
 
     Route::group(['prefix' => '/user'], function () { // Admin User Management Routes with prefix /a/user ♥

@@ -12,15 +12,15 @@ class AccessionsController extends Controller
     public static function accession($item = null, $copies = 0)
     {
         $prefixes = [
-            1 => 'BK',
-            2 => 'UT',
-            3 => 'GT',
-            4 => 'AU',
-            5 => 'SE',
-            6 => 'PE',
-            7 => 'EL',
-            8 => 'VF',
-            9 => 'NC',
+            'book' => ['value' => 'BK'],
+            'thesis' => ['value' => 'UT'],
+            'dissertation' => ['value' => 'GT'],
+            'audio' => ['value' => 'AU'],
+            'serial' => ['value' => 'SE'],
+            'periodical' => ['value' => 'PE'],
+            'electronic' => ['value' => 'EL'],
+            'vertical' => ['value' => 'VF'],
+            'newspaper' => ['value' => 'NC'],
         ];
 
         $firstNames = [
@@ -52,53 +52,50 @@ class AccessionsController extends Controller
             'Wilson', 'Young', 'Zamora', 'Zhang', 'Zimmerman',
         ];
 
-        $prefix = $prefixes[$item->item_type_id];
+        $prefix = $prefixes[$item->item_type];
 
         // ✅ Get last number ONCE
-        $last = Accessions::where('accession_number', 'like', $prefix.'%')
-            ->orderBy('accession_number', 'desc')
+        $last = Accessions::where('accession_code', 'like', $prefix['value'].'%')
+            ->orderBy('accession_code', 'desc')
             ->first();
 
         $lastNumber = $last
-            ? intval(substr($last->accession_number, strlen($prefix)))
+            ? intval(substr($last->accession_code, strlen($prefix['value'])))
             : 0;
 
         $modes = ['donated', 'purchased', 'gift', 'exchange'];
+
+        $acquisition = Acquisition::create([
+            // 'purchaseId' => '',
+            'acquisition_mode' => $modes[rand(0, 3)],
+            'dealer' => 'Hindi Ah',
+            'acquisition_date' => now(),
+            'remarks' => '',
+            'received_by' => 1,
+        ]);
 
         for ($i = 0; $i < $copies; $i++) {
 
             // ✅ Increment PROPERLY
             $lastNumber++;
-            $newAccessionNumber = $prefix.str_pad($lastNumber, 7, '0', STR_PAD_LEFT);
-
-            // ✅ Acquisition
-            $mode = $modes[array_rand($modes)];
-
-            $acquisition = Acquisition::create([
-                'purchase_order' => '',
-                'dealer' => 'Hindi Ah',
-                'acquisition_mode' => $mode,
-                'acquisition_date' => now(),
-                'price' => $mode == 'purchased' ? rand(150, 10000) : 0,
-                'remarks' => '',
-            ]);
+            $newAccessionNumber = $prefix['value'].str_pad($lastNumber, 7, '0', STR_PAD_LEFT);
 
             // ✅ Create accession
             Accessions::create([
                 'item_id' => $item->id,
-                'accession_number' => $newAccessionNumber,
+                'accession_code' => $newAccessionNumber,
                 'shelf_location' => 'Sa kabilang shelf',
                 'status' => 'available',
-                'branch_id' => 1,
+                'section_id' => 1,
                 'date_acquired' => now(),
                 'acquisition_id' => $acquisition->id,
                 'remarks' => null,
             ]);
-            
+
             $author = Author::create([
                 'name' => $firstNames[array_rand($firstNames)].' '.$lastNames[array_rand($lastNames)],
             ]);
-    
+
             ItemAuthors::create([
                 'item_id' => $item->id,
                 'author_id' => $author->id,
