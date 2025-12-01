@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('newspapers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->date('date')->nullable();
             $table->string('edition')->nullable();
             $table->string('pages')->nullable();
             $table->timestamps();
+            
+            $table->unsignedBigInteger('item_id');
         });
     }
 

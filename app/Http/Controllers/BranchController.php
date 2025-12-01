@@ -19,11 +19,9 @@ class BranchController extends Controller
     
     public function get(Request $request, $id) {
         $branches = Branch::where('campus_id', $id)->get();
-        if (!$id) {
-            $branches = Branch::where('campus_id', $request->id)->get();
-        }
-        return response()->json(["data" => $branches]);
 
+        $branches->load('department');
+        return response()->json(["data" => $branches]);
     }
 
     // Create new branch

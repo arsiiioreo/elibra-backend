@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('verticals', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->string('organization')->nullable();
             $table->string('location')->nullable();
             $table->string('notes')->nullable();
             $table->timestamps();
+            
+            $table->unsignedBigInteger('item_id');
         });
     }
 

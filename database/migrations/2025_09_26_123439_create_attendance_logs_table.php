@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('attendance_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patron_id');
-            $table->unsignedBigInteger('branches_id');
             $table->enum('status', ['in', 'out']);
             $table->timestamps();
+
+            $table->unsignedBigInteger('patron_id');
+            $table->unsignedBigInteger('section_id');
         });
     }
 

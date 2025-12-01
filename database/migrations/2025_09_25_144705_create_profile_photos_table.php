@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('profile_photos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
             $table->string('original_name');
             $table->string('stored_name');
             $table->string('path');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unsignedBigInteger('user_id')->nullable();
         });
     }
 

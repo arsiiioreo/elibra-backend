@@ -15,12 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('contact_info')->nullable();
-            $table->unsignedBigInteger('campus_id');
-            $table->unsignedBigInteger('department_id')->nullable();
             $table->time('opening_hour')->nullable();
             $table->time('closing_hour')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            
+            $table->unsignedBigInteger('campus_id');
+            $table->unsignedBigInteger('department_id')->nullable();
         });
     }
 

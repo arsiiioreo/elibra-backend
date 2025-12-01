@@ -13,10 +13,9 @@ return new class extends Migration
     {
         Schema::create('patron_types', function (Blueprint $table) {
             $table->id();
+            $table->string('key')->unique();
             $table->string('name');
             $table->string('description');
-            $table->boolean('can_reserve')->default(false);
-            $table->integer('reservation_limit');
             $table->timestamps();
             $table->softDeletes();
         });

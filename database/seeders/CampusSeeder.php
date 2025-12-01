@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Campus;
 use App\Models\Department;
 use App\Models\Program;
+use App\Models\Section;
 use Illuminate\Database\Seeder;
 
 class CampusSeeder extends Seeder
@@ -32,12 +33,16 @@ class CampusSeeder extends Seeder
                 'abbrev' => 'BSIT',
                 'department_id' => $d->id,
             ]);
-            Branch::create([
+            $b = Branch::create([
                 'name' => 'University Library',
                 'campus_id' => $c->id,
                 'contact_info' => '09123456789',
                 'opening_hour' => '08:00:00',
                 'closing_hour' => '17:00:00',
+            ]);
+            Section::create([
+                'branch_id' => $b->id,
+                'name' => 'General',
             ]);
 
         }

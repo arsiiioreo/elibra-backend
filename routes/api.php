@@ -2,21 +2,28 @@
 
 use App\Http\Controllers\AcquisitionRequestController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AttendanceLogController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\OTPVerifier;
+use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BranchController;
-use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\CampusController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ItemTypesController;
+use App\Http\Controllers\LibrarianController;
+use App\Http\Controllers\OpacController;
 use App\Http\Controllers\PatronTypesController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramsController;
+use App\Http\Controllers\PublisherController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserLogController;
-use App\Models\AcquisitionRequest;
+use App\Models\Language;
+use App\Models\Publisher;
 use Illuminate\Support\Facades\Route;
 
 // Dictionary: API Routes
@@ -27,9 +34,7 @@ use Illuminate\Support\Facades\Route;
 // ur - user role
 
 // All routes marked with ♥ are tested and working
-
-
-
+// The routes are fixed and organized by category.
 
 // My own user data
 Route::middleware(['jwt.auth'])->group(function () {
@@ -37,23 +42,18 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Route::put('/me/update', [UserController::class, 'update']);
     // Route::delete('/me/delete', [UserController::class, 'destroy']);
     Route::get('/my-activity', [ActivityLogController::class, 'index']); // ♥
-    Route::post('/upload-pfp', [ProfilePhotosController::class, 'uploadPhoto']); 
+    Route::post('/upload-pfp', [ProfilePhotosController::class, 'uploadPhoto']);
 });
 
-
-
 // Authentication Routes
-Route::post('/auth/login', [AuthController  ::class, 'login']); // ♥
-Route::get('/auth/logout', [AuthController  ::class, 'logout']); // ♥
+Route::post('/auth/login', [AuthController::class, 'login']); // ♥
+Route::get('/auth/logout', [AuthController::class, 'logout']); // ♥
 Route::post('/auth/register', [AuthController::class, 'register']); // ♥
 Route::get('auth/refresh', [AuthController::class, 'refresh']); // ♥
 Route::get('/auth/verify-email', [AuthController::class, 'verifyEmail']); // Verifying email during registration ♥
 // Route::get('/auth/verify-email/{token}/{otp}', [AuthController::class, 'verifyEmail']); // Verifying email during registration ♥
 Route::get('/auth/send-otp', [OTPVerifier::class, 'sendOTP'])->middleware('jwt.auth'); // Sending OTP for anything (email verification, 2FA, etc.) ♥
-Route::post('/auth/verify-otp', [OTPVerifier::class, 'verifyOTP'])->middleware('jwt.auth'); // 
-
-
-
+Route::post('/auth/verify-otp', [OTPVerifier::class, 'verifyOTP'])->middleware('jwt.auth'); //
 
 // Campus, Department and Program Management Routes
 
@@ -63,9 +63,9 @@ Route::post('/addCampus', [CampusController::class, 'add'])->middleware('jwt.aut
 Route::post('/updateCampus', [CampusController::class, 'update'])->middleware('jwt.auth', 'role:0,1'); // ♥
 Route::post('/deleteCampus', [CampusController::class, 'delete'])->middleware('jwt.auth', 'role:0'); // ♥
 
-// Department Routes    
+// Department Routes
 Route::group(['prefix' => '/department'], function () {
-    // Route::get('/all-d', [DepartmentController::class, 'all']); 
+    // Route::get('/all-d', [DepartmentController::class, 'all']);
     Route::get('/read/{id}', [DepartmentController::class, 'details'])->middleware('jwt.auth', 'role:0,1');  // ♥
     Route::post('/create', [DepartmentController::class, 'add'])->middleware('jwt.auth', 'role:0,1');  // ♥
     Route::post('/update', [DepartmentController::class, 'update']); // ♥
@@ -75,8 +75,11 @@ Route::group(['prefix' => '/department'], function () {
 
 // Program Routes
 Route::group(['prefix' => 'program'], function () {
+    Route::get('/read/from-campus/{id}', [ProgramsController::class, 'readFromCampus']); // ♥
     Route::get('/read/{id}', [ProgramsController::class, 'details']); // ♥
     Route::post('/create', [ProgramsController::class, 'add']); // ♥
+    Route::put('/update', [ProgramsController::class, 'update']);
+    Route::delete('/delete/{id}', [ProgramsController::class, 'delete']);
 
 });
 
@@ -90,19 +93,19 @@ Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], 
     Route::post('/create', [BranchController::class, 'add']); // ♥
     Route::post('/update', [BranchController::class, 'update']); // ♥
     Route::delete('/delete', [BranchController::class, 'delete']); // ♥
-}); 
+});
 
 // Patron Types
 Route::get('/patron-types', [PatronTypesController::class, 'index']); // ♥
-
 
 // Item Management
 Route::group(['prefix' => '/item'], function () {
     Route::get('/get', [ItemController::class, 'index']); // ♥
     Route::get('/get/{id}', [ItemController::class, 'thisItem']); // ♥
+
+    
     Route::post('/add', [ItemController::class, 'create']); // ♥
 });
-
 
 // Acquisition Requests
 Route::group(['prefix' => '/acquisition'], function () {
@@ -110,9 +113,7 @@ Route::group(['prefix' => '/acquisition'], function () {
     Route::get('/get', [AcquisitionRequestController::class, 'index']);
 });
 
-
 Route::get('patron/logs', [UserLogController::class, 'index']);
-
 
 // Attendance Log Management
 Route::group(['prefix' => '/attendance'], function () {
@@ -120,11 +121,22 @@ Route::group(['prefix' => '/attendance'], function () {
     Route::get('/logs', [AttendanceLogController::class, 'logs']);
 });
 
+// Languages
+Route::group(['prefix' => '/language'], function () {
+    Route::get('/', function () {
+        return response()->json(Language::all());
+    });
+});
 
+// Publisher
+Route::group(['prefix' => '/publisher'], function () {
+    Route::get('/', [PublisherController::class, 'index']);
+    Route::post('/create', [PublisherController::class, 'create']);
+});
 
-Route::get('/item-type/get', [ItemTypesController::class, 'read']); // ♥
-
+// Item Types
 Route::group(['prefix' => '/item-type'], function () {
+    Route::get('/get', [ItemTypesController::class, 'read']); // ♥
     Route::post('/add', [ItemTypesController::class, 'create'])->middleware('jwt.auth', 'role:0,1'); // ♥
     Route::put('/edit', [ItemTypesController::class, 'update'])->middleware('jwt.auth', 'role:0,1'); // ♥
     Route::delete('/delete/{id}', [ItemTypesController::class, 'delete'])->middleware('jwt.auth', 'role:0,1');
@@ -132,32 +144,57 @@ Route::group(['prefix' => '/item-type'], function () {
     // Route::delete('/item-type/delete-permanent/{id}', [ItemTypesController::class, 'delete_permanent']);
 });
 
+// Book Categories
+Route::group(['prefix' => '/category'], function () {
+    Route::get('/', [CategoryController::class, 'index']);
+});
+
+// Author
+Route::group(['prefix' => '/author'], function () {
+    Route::get('/', [AuthorController::class, 'index']);
+});
+
+
+
+
+
+
+
+// Special Routes
+
+Route::group(['prefix' => '/opac'], function () {
+    Route::get('/', [OpacController::class, 'index']); // ♥
+});
+
+
+
 
 
 
 // Admin Routes
 Route::group(['prefix' => '/a', 'middleware' => ['jwt.auth', 'role:0']], function () { // Admin Routes with prefix /a
-    Route::get('/users',[UserController::class, 'index'] ); // Display all users ♥
+    Route::get('/', [AdminController::class, 'dashboard']);
+    
+    Route::get('/users', [UserController::class, 'index']); // Display all users ♥
 
     Route::group(['prefix' => '/user'], function () { // Admin User Management Routes with prefix /a/user ♥
-        Route::get('/details/{id}',[UserController::class, 'details'] ); // Get details of a specific user ♥
-        Route::get('/approve/{id}',[UserController::class, 'approveUser'] ); // Lets Admin approve a user's registration approval ♥
-        Route::get('/reject/{id}',[UserController::class, 'rejectUser'] ); // Lets Admin approve a user's registration approval ♥
-        Route::post("/update/{id}", [UserController::class, 'updateInfo']); // ♥
-        Route::post('/create',[UserController::class, 'create'] );
-        Route::delete('/delete/{id}',[UserController::class, 'destroy'] );
+        Route::get('/details/{id}', [UserController::class, 'details']); // Get details of a specific user ♥
+        Route::get('/approve/{id}', [UserController::class, 'approveUser']); // Lets Admin approve a user's registration approval ♥
+        Route::get('/reject/{id}', [UserController::class, 'rejectUser']); // Lets Admin approve a user's registration approval ♥
+        Route::post('/update/{id}', [UserController::class, 'updateInfo']); // ♥
+        Route::post('/create', [UserController::class, 'create']);
+        Route::delete('/delete/{id}', [UserController::class, 'destroy']);
 
-        Route::put('/restore/{id}',[UserController::class, 'restore'] );
-        
+        Route::put('/restore/{id}', [UserController::class, 'restore']);
+
         // Route::put('/update/{id}',[UserController::class, 'update'] );
     });
-    
+
 });
 
-
-
 // Librarian Routes
-Route::group(['middleware' => ['jwt.auth', 'role:1']], function () {
+Route::group(['prefix' => '/l', 'middleware' => ['jwt.auth', 'role:1']], function () {
+    Route::get('/', [LibrarianController::class, 'dashboard']);
     // All Librarians
     // Route::get('/all-librarians', [LibrariansController::class, 'all']);
     // Item Routes
@@ -167,7 +204,6 @@ Route::group(['middleware' => ['jwt.auth', 'role:1']], function () {
     // Route::post('/add-copies-of-item', [AccessionController::class, 'accessioning_old']);
 });
 
-
 // Admin and Librarian Routes
 Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
     // User Routes
@@ -175,7 +211,6 @@ Route::group(['middleware' => ['jwt.auth', 'role:0,1']], function () {
 
     // Route::post('/udpate-user-registration', [SuperAdminControls::class, 'updateRegistration']);
 });
-
 
 // Patron Routes
 

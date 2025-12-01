@@ -12,7 +12,13 @@ class Branch extends Model
 
     protected $fillable = ['name', 'campus_id', 'department_id', 'address', 'contact_info', 'opening_hour', 'closing_hour'];
 
-    public function campus() : BelongsTo {
+    public function campus(): BelongsTo
+    {
         return $this->belongsTo(Campus::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
     }
 }

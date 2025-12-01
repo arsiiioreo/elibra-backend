@@ -23,47 +23,56 @@ class AuthController extends Controller
 {
     public function user()
     {
-        $auth = auth('api')->user();
+        try {
+            $auth = auth('api')->user();
 
-        $data = [
-            // Personal Info
-            'name' => $auth->last_name.', '.$auth->first_name.' '.($auth->middle_initial ? $auth->middle_initial.'.' : ''),
-            'last_name' => $auth->last_name,
-            'middle_initial' => $auth->middle_initial ?? 'N/A',
-            'first_name' => $auth->first_name,
-            'sex' => $auth->sex,
+            $data = [
+                // Personal Info
+                'name' => $auth->last_name.', '.$auth->first_name.' '.($auth->middle_initial ? $auth->middle_initial.'.' : ''),
+                'last_name' => $auth->last_name,
+                'middle_initial' => $auth->middle_initial ?? 'N/A',
+                'first_name' => $auth->first_name,
+                'sex' => $auth->sex,
+                'birthdate' => $auth->birthdate ? date('F d, Y', strtotime($auth->birthdate)) : null,
 
-            // Contact Info
-            'contact_number' => $auth->contact_number,
-            'email' => $auth->email,
+                // Contact Info
+                'contact_number' => $auth->contact_number,
+                'email' => $auth->email,
 
-            // Account Info
-            'email_verified_at' => $auth->email_verified_at,
-            'profile_picture' => $auth->profile_photos?->path ? asset('storage/'.$auth->profile_photos?->path) : asset('logo.png'),
-            'role' => $auth->role,
+                // Account Info
+                'email_verified_at' => $auth->email_verified_at,
+                'profile_picture' => $auth->profile_photos?->path ? asset('storage/'.$auth->profile_photos?->path) : asset('profile_default.png'),
+                'status' => $auth->status == 0 ? 'Active' : ($auth->status == 1 ? 'Suspended' : 'Expired'),
+                'role' => $auth->role,
 
-        ];
-
-        if ($auth->isAdmin) {
-            $data += [
+                'created_at' => $auth->created_at,
+                'updated_at' => $auth->updated_at,
 
             ];
 
-        } elseif ($auth->isLibrarian) {
-            $data += [
-                'campus' => $auth->librarian->branch->campus,
-                'librarian' => $auth->librarian,
-                "branch" => $auth->librarian->branch
-            ];
-        } elseif ($auth->isPatron) {
-            $data += [
-                'campus' => $auth->campus,
-                'patron' => $auth->patron,
-                'patron_type' => $auth->patron->patron_type,
-            ];
+            if ($auth->isAdmin) {
+                $data += [
+
+                ];
+
+            } elseif ($auth->isLibrarian) {
+                $data += [
+                    'campus' => $auth->librarian->section->branch->campus,
+                    'librarian' => $auth->librarian,
+                    'branch' => $auth->librarian->branch,
+                ];
+            } elseif ($auth->isPatron) {
+                $data += [
+                    'campus' => $auth->campus,
+                    'patron' => $auth->patron,
+                    'patron_type' => $auth->patron->patron_type,
+                ];
+            }
+
+            return response()->json(['status' => 'success', 'data' => $data]);
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'messaage' => $e->getMessage()]);
         }
-
-        return response()->json($data);
     }
 
     public function refresh()
@@ -226,7 +235,7 @@ class AuthController extends Controller
                 $user->save();
             }
 
-            return response()->json(['status' => 'error', 
+            return response()->json(['status' => 'error',
                 'message' => 'Incorrect password, please try again.',
             ]);
         }

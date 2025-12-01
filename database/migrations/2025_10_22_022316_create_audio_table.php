@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('audio', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->string('format')->nullable();
             $table->string('duration')->nullable();
             $table->string('producer')->nullable();
             $table->timestamps();
+            
+            $table->unsignedBigInteger('item_id');
         });
     }
 

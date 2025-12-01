@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Item;
-use App\Models\ItemTypes;
 use App\Services\ItemCatalogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -50,23 +49,21 @@ class ItemController extends Controller
 
         $items = Item::query()
             ->whereNull('deleted_at')
-            ->with('publisher', 'itemType', 'language', 'book', 'thesis', 'dissertation','audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
+            ->with('publisher', 'itemType', 'language', 'book', 'thesis', 'dissertation', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
             ->when($validated['query'], function ($q, $search) {
                 $terms = explode(' ', $search);
                 foreach ($terms as $term) {
                     $q->where(function ($inner) use ($term) {
                         $inner
                             ->where('title', 'like', "%$term%")
-                            ->orWhere('isbn_issn', 'like', "%$term%")
-                            ->orWhere('call_number', 'like', "%$term%")
-                            ->orWhere('edition', 'like', "%$term%");
+                            ->orWhere('isbn_issn', 'like', "%$term%");
                     });
                 }
             })
-            ->when(isset($validated['type']) && $validated['type'] !== '', function ($q) use ($validated) {
+            ->when(! empty($validated['type']), function ($q) use ($validated) {
                 $q->where('item_type_id', $validated['type']);
             })
-            ->when(isset($validated['language_id']) && $validated['language_id'] !== '', function ($q) use ($validated) {
+            ->when(! empty($validated['language_id']), function ($q) use ($validated) {
                 $q->where('language_id', $validated['language_id']);
             })
             ->when($validated['year_from'] || $validated['year_to'], function ($q) use ($validated) {
@@ -79,28 +76,16 @@ class ItemController extends Controller
             })
             ->orderBy($validated['sort'], $validated['order']);
 
-        if (isset($request->paginate) === false) {
+        if ($request->boolean('paginate')) {
             return response()->json($items->paginate(
                 $validated['entries'],
-                [
-                    'id',
-                    'title',
-                    'isbn_issn',
-                    'edition',
-                    'call_number',
-                    'publisher_id',
-                    'year_published',
-                    'item_type_id',
-                    'language_id',
-                    'remarks',
-                    'created_at',
-                ],
+                ['*'],
                 'page',
                 $validated['page']
             ));
-        } 
-        
-        return response()->json(["data" => $items->get()]);
+        } else {
+            return response()->json(['data' => $items->get()]);
+        }
     }
 
     public function thisItem($id)
@@ -118,42 +103,44 @@ class ItemController extends Controller
         // 1) base validation for Item common fields
         $baseRules = [
             'title' => 'required|string|max:255',
-            'publisher_id' => 'nullable|integer|exists:publishers,id',
-            'year_published' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
-            'isbn_issn' => 'nullable|string|max:20',
-            'edition' => 'nullable|string|max:100',
             'call_number' => 'required|string|max:100',
-            'item_type_id' => 'required|integer|exists:item_types,id',
-            'language_id' => 'nullable|integer|exists:languages,id',
-            'remarks' => 'nullable|string',
+            'year_published' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
+            'item_type' => 'required|integer|in:audio,book,dissertation,electronic,newspaper,
+                        periodical,serial,vertical',
+
+            'description' => 'nullable|string',
             'maintext_raw' => 'nullable|json',
+
+            'language_id' => 'nullable|integer|exists:languages,id',
+            'publisher_id' => 'nullable|integer|exists:publishers,id',
         ];
 
         $validatedBase = $request->validate($baseRules);
 
-        // 2) dynamic subtype validation if service exposes rules()
-        $itemType = ItemTypes::find($validatedBase['item_type_id']);
-        $fullData = $request->all();
+        $item = Item::create([
+            'title' => $request->title,
+            'call_number' => $request->call_number,
+            'year_published' => $request->year_published,
+            'item_type' => $request->item_type,
 
-        if ($itemType) {
-            $serviceClass = 'App\\Services\\ItemTypes\\'.ucfirst($this->normalizeTypeName($itemType->name)).'Service';
-            if (class_exists($serviceClass)) {
-                $service = app($serviceClass);
-                if (method_exists($service, 'rules')) {
-                    $subRules = $service->rules();
-                    // validate only the subtype rules against incoming data
-                    $request->validate($subRules);
-                }
-            }
+            'description' => $request->description ?? null,
+            'maintext_raw' => $request->maintext_raw ?? null,
+
+            'language_id' => $request->language_id,
+            'publisher_id' => $request->publisher_id,
+        ]);
+
+        if ($item) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Item created successfully',
+            ]);
         }
 
-        // 3) create item via the service
-        $item = $this->catalog->createItem($validatedBase, $fullData);
-
         return response()->json([
-            'message' => 'Item created successfully',
-            'data' => $item->load('book', 'thesis', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper'), // load what's relevant
-        ], 201);
+            'status' => 'error',
+            'message' => 'Something went wrong. Please try again.',
+        ]);
     }
 
     protected function normalizeTypeName(string $name): string

@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('patron_type_loan_policies', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('patron_type_id');
-            $table->unsignedBigInteger('loan_mode_id');
+            $table->string('name');
+            $table->string('key');
+            $table->string('description');
+            $table->boolean('can_reserve')->default(false);
+            $table->integer('reservation_limit');
             $table->integer('loan_period_days');
             $table->integer('max_items');
             $table->integer('max_renewals');
@@ -22,6 +25,9 @@ return new class extends Migration
             $table->integer('grace_period');
             $table->string('notes');
             $table->timestamps();
+
+            $table->unsignedBigInteger('patron_type_id');
+            $table->unsignedBigInteger('loan_mode_id');
         });
     }
 

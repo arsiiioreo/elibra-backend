@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('system_settings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('setting_key');
             $table->json('setting_value');
             $table->string('description');
             $table->timestamps();
+
+            $table->unsignedBigInteger('setting_key');
         });
     }
 

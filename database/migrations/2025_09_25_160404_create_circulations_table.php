@@ -13,19 +13,22 @@ return new class extends Migration
     {
         Schema::create('circulations', function (Blueprint $table) {
             $table->id();
+            $table->dateTime('borrowed_at');
+            $table->dateTime('due_at');
+            $table->dateTime('returned_at')->nullable();
+
+            $table->enum('status', ['borrowed', 'returned', 'overdue', 'lost', 'cancelled'])->index();
+            $table->integer('renewal_count')->default(0);
+            $table->decimal('fine_charged')->default(0);
+            $table->string('notes')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+            
+            $table->unsignedBigInteger('processed_by');
             $table->unsignedBigInteger('accession_id');
             $table->unsignedBigInteger('patron_id');
             $table->unsignedBigInteger('loan_mode_id');
-            $table->dateTime('borrowed_at');
-            $table->dateTime('due_at');
-            $table->dateTime('returned_at');
-            $table->unsignedBigInteger('processed_by');
-            $table->enum('status', ['borrowed', 'returned', 'overdue', 'lost', 'cancelled']);
-            $table->integer('renewal_count')->default(1);
-            $table->float('fine_charged')->default(0);
-            $table->string('notes');
-            $table->timestamps();
-            $table->softDeletes();
+            $table->unsignedBigInteger('return_received_by');
         });
     }
 

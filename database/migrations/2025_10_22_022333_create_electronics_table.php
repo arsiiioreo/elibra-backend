@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('electronics', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->string('isbn_issn')->nullable();
             $table->string('file_size')->nullable();
             $table->string('access_url')->nullable();
             $table->timestamps();
+            
+            $table->unsignedBigInteger('item_id');
         });
     }
 

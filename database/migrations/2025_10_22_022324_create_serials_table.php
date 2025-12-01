@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('serials', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->string('isbn_issn')->nullable();
             $table->string('volume')->nullable();
             $table->string('issue')->nullable();
             $table->string('pages')->nullable();
             $table->string('doi')->nullable();
             $table->timestamps();
+            
+            $table->unsignedBigInteger('item_id');
         });
     }
 

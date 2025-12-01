@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('abbrev');
-            $table->unsignedBigInteger('department_id');
             $table->timestamps();
             $table->softDeletes();
+            
+            $table->unsignedBigInteger('department_id');
         });
     }
 

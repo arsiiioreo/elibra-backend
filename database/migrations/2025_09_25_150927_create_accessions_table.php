@@ -13,18 +13,17 @@ return new class extends Migration
     {
         Schema::create('accessions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
-            $table->string('accession_number');
+            $table->string('accession_code');
             $table->string('shelf_location');
-            $table->enum('status', ['available', 'on_load', 'lost', 'missing', 'archived'])->default('available');
-            $table->unsignedBigInteger('branch_id');
-            
+            $table->enum('status', ['available', 'on_load', 'lost', 'missing', 'archived', 'condemned'])->default('available');
             $table->dateTime('date_acquired');
-            
-            $table->unsignedBigInteger('acquisition_id');
             $table->string('remarks')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unsignedBigInteger('item_id');
+            $table->unsignedBigInteger('section_id'); // Location
+            $table->unsignedBigInteger('acquisition_id');
         });
     }
 

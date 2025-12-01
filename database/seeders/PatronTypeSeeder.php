@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\PatronTypes;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PatronTypeSeeder extends Seeder
@@ -15,22 +14,19 @@ class PatronTypeSeeder extends Seeder
     {
         $data = [
             [
-                "name" => "Faculty",
-                "description" => "Faculties Group",
-                "can_reserve" => true,
-                "reservation_limit" => 0
+                'key' => 'faculty',
+                'name' => 'Faculty',
+                'description' => 'Faculties Group',
             ],
             [
-                "name" => "Student",
-                "description" => "Students Group",
-                "can_reserve" => true,
-                "reservation_limit" => 1
+                'key' => 'student',
+                'name' => 'Student',
+                'description' => 'Students Group',
             ],
             [
-                "name" => "Guest",
-                "description" => "Patrons out of the Isabela State University",
-                "can_reserve" => false,
-                "reservation_limit" => 1
+                'key' => 'guest',
+                'name' => 'Guest',
+                'description' => 'Patrons outside of the Isabela State University System',
             ],
         ];
 

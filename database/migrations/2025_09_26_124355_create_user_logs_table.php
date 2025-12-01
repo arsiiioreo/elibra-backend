@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('user_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
             $table->string('action');
             $table->json('details');
             $table->timestamps();
+
+            $table->unsignedBigInteger('user_id');
         });
     }
 

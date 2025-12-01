@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('librarians', function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('username')->unique()->nullable();
-            $table->unsignedBigInteger('branch_id');
+            $table->string('name');
             $table->timestamps();
+            $table->softDeletes();
+            
+            $table->unsignedBigInteger('branch_id');
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('librarians');
+        Schema::dropIfExists('sections');
     }
 };

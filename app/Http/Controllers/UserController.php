@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Librarian;
 use App\Models\Patron;
 use App\Models\User;
@@ -274,6 +275,7 @@ class UserController extends Controller
                 'sex' => 'required|in:male,female,other',
                 'email' => 'required|unique:users,email',
                 'contact_number' => 'nullable|max:15',
+                'birthdate' => 'nullable|date',
                 'username' => 'nullable|string',
                 'campus_id' => 'nullable',
                 'branch_id' => 'nullable',
@@ -304,11 +306,12 @@ class UserController extends Controller
 
             // Create user
             $user = User::create([
-                'last_name' => $validated['last_name'],
-                'middle_initial' => $validated['middle_initial'],
-                'first_name' => $validated['first_name'],
+                'last_name' => ucfirst($validated['last_name']),
+                'middle_initial' => ucfirst($validated['middle_initial']),
+                'first_name' => ucfirst($validated['first_name']),
                 'sex' => $validated['sex'],
                 'contact_number' => $validated['contact_number'],
+                'birthdate' => $validated['birthdate'],
                 'email' => $validated['email'],
                 'password' => 'isuelibra2025',
                 'role' => $validated['role'],
@@ -316,30 +319,39 @@ class UserController extends Controller
             ]);
 
             // Create librarian if applicable
-            if ($user && $user->role === '1') {
-                Librarian::create([
-                    'user_id' => $user->id,
-                    'username' => $validated['username'] ?? null,
-                    'branch_id' => $validated['branch_id'] ?? null,
+            if ($user) { 
+                ActivityLog::create([
+                    'user_id' => $man->id,
+                    'affected_user_id' => $user->id,
+                    'title' => 'Account Created',
+                    'description' => $man->first_name . ' created an account for ' . $user->first_name
                 ]);
-            } elseif ($user && $user->role === '2') {
-                $patron = Patron::create([
-                    'user_id' => $user->id,
-                    'patron_type_id' => $validated['patron_type_id'],
-                ]);
-
-                if (in_array($validated['patron_type_id'], [1, 2])) {
-                    $patron->id_number = $validated['id_number'];
-                    $patron->program_id = $validated['program_id'];
-                    $patron->save();
-                } else {
-                    $patron->external_organization = $validated['external_organization'];
-                    $patron->save();
-
+                
+                if ($user->role === '1') {
+                    Librarian::create([
+                        'user_id' => $user->id,
+                        'username' => $validated['username'] ?? null,
+                        'branch_id' => $validated['branch_id'] ?? null,
+                    ]);
+                } elseif ($user->role === '2') {
+                    $patron = Patron::create([
+                        'user_id' => $user->id,
+                        'patron_type_id' => $validated['patron_type_id'],
+                    ]);
+    
+                    if (in_array($validated['patron_type_id'], [1, 2])) {
+                        $patron->id_number = $validated['id_number'];
+                        $patron->program_id = $validated['program_id'];
+                        $patron->save();
+                    } else {
+                        $patron->external_organization = $validated['external_organization'];
+                        $patron->save();
+    
+                    }
                 }
+                DB::commit();
             }
 
-            DB::commit();
 
             return response()->json([
                 'status' => 'success',

@@ -13,11 +13,13 @@ class Librarian extends Model
         'branch_id',
     ];
 
-    public function user() :BelongsTo {
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function branch() :BelongsTo {
-        return $this->belongsTo(Branch::class);
+    public function section(): BelongsTo
+    {
+        return $this->belongsTo(Section::class);
     }
 }

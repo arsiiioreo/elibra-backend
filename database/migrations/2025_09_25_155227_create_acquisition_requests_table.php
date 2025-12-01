@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('acquisition_requests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('requested_by');
             $table->string('title');
             $table->string('author');
             $table->string('publisher');
@@ -21,13 +20,17 @@ return new class extends Migration
             $table->string('edition')->nullable();
             $table->integer('quantity')->default(1);
             $table->float('estimated_unit_price')->nullable();
-            $table->string('dealer')->nullable();
+            $table->string('supplier')->nullable();
             $table->string('dept')->nullable();
             $table->string('dept_head')->nullable();
-            $table->unsignedBigInteger('item_type_id');
+            $table->enum('item_type', ['audio', 'book', 'dissertation', 'electronic', 'newspaper', 'periodical', 'serial', 'vertical']);
             $table->date('date_ordered')->nullable();
-            $table->enum('status', ['request', 'pending', 'ordered', 'declined', 'cancelled'])->default('request');
+            $table->enum('status', ['request', 'pending', 'ordered', 'done', 'declined', 'cancelled'])->default('request');
             $table->timestamps();
+
+            $table->unsignedBigInteger('approved_by')->nullable();
+            $table->unsignedBigInteger('last_modified_by')->nullable();
+            $table->unsignedBigInteger('requested_by');
         });
     }
 

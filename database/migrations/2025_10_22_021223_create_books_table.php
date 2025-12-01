@@ -13,12 +13,16 @@ return new class extends Migration
     {
         Schema::create('books', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->string('isbn_issn')->nullable();
-            $table->unsignedBigInteger('categories_id');
+            $table->enum('category', ['encyclopedia', 'english',
+                'filipiniana', 'fiction', 'general', 'math',
+                'novel', 'reference', 'science', 'textbook',
+            ]);
             $table->string('edition')->nullable();
             $table->integer('pages')->nullable();
             $table->timestamps();
+
+            $table->unsignedBigInteger('item_id');
         });
     }
 

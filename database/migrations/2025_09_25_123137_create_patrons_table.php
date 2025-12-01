@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('patrons', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
             $table->string('ebc')->unique()->nullable();
             $table->string('id_number')->unique()->nullable();
-            $table->unsignedBigInteger('program_id')->nullable();
-            $table->unsignedBigInteger('patron_type_id');
+            // $table->enum('patron_type', ['student', 'faculty', 'guest']);
             $table->string('external_organization')->nullable();
             $table->string('address')->nullable();
             $table->dateTime('date_joined')->default(now());
@@ -26,6 +24,10 @@ return new class extends Migration
             $table->string('remarks')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('program_id')->nullable();
+            $table->unsignedBigInteger('patron_type_id');
         });
     }
 

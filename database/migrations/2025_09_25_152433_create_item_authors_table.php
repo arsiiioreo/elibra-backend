@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('item_authors', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
-            $table->unsignedBigInteger('author_id');
+            $table->enum('authorship', ['author', 'adviser', 'researcher', 'producer', 'artist', 'writer']);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unsignedBigInteger('item_id');
+            $table->unsignedBigInteger('author_id');
         });
     }
 

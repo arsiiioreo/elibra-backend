@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
@@ -12,67 +11,79 @@ class Item extends Model
 
     protected $fillable = [
         'title',
-        'publisher_id',
-        'year_published',
         'call_number',
-        'item_type_id',
-        'language_id',
-        'remarks',
+        'year_published',
+        'item_type',
+
+        'description',
         'maintext_raw',
+
+        'publisher_id',
+        'language_id',
     ];
 
-    public function accession() {
+    public function accession()
+    {
         return $this->hasMany(Accessions::class, 'item_id', 'id');
     }
 
-    public function authors() {
+    public function authors()
+    {
         return $this->hasMany(ItemAuthors::class, 'item_id', 'id');
     }
-    public function publisher() {
+
+    public function publisher()
+    {
         return $this->belongsTo(Publisher::class, 'publisher_id', 'id');
     }
 
-    public function itemType() : HasOne {
-        return $this->hasOne(ItemTypes::class, 'id', 'item_type_id');
+    public function language()
+    {
+        return $this->belongsTo(Language::class, 'language_id', 'id');
     }
 
-    public function language() {
-        return $this->belongsTo(Language::class, 'language_id','id');
-    }
-
-    public function book() {
+    public function book()
+    {
         return $this->hasOne(Book::class, 'item_id');
     }
 
-    public function thesis() {
+    public function thesis()
+    {
         return $this->hasOne(Thesis::class, 'item_id');
     }
 
-    public function dissertation() {
+    public function dissertation()
+    {
         return $this->hasOne(Dissertation::class, 'item_id');
     }
 
-    public function audio() {
+    public function audio()
+    {
         return $this->hasOne(Audio::class, 'item_id');
     }
 
-    public function serial() {
+    public function serial()
+    {
         return $this->hasOne(Serial::class, 'item_id');
     }
 
-    public function periodical() {
+    public function periodical()
+    {
         return $this->hasOne(Periodical::class, 'item_id');
     }
 
-    public function electronic() {
+    public function electronic()
+    {
         return $this->hasOne(Electronic::class, 'item_id');
     }
 
-    public function vertical() {
+    public function vertical()
+    {
         return $this->hasOne(Vertical::class, 'item_id');
     }
 
-    public function newspaper() {
+    public function newspaper()
+    {
         return $this->hasOne(Newspaper::class, 'item_id');
     }
 }

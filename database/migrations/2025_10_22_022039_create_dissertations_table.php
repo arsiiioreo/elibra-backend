@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('dissertations', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('item_id');
             $table->text('abstract')->nullable();
             $table->string('advisor')->nullable();
             $table->json('researchers')->nullable();
-            $table->unsignedBigInteger('program_id')->nullable();
             $table->string('doi')->nullable();
             $table->timestamps();
+
+            $table->unsignedBigInteger('item_id');
+            $table->unsignedBigInteger('program_id')->nullable();
         });
     }
 
