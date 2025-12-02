@@ -49,7 +49,7 @@ class ItemController extends Controller
 
         $items = Item::query()
             ->whereNull('deleted_at')
-            ->with('publisher', 'itemType', 'language', 'book', 'thesis', 'dissertation', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
+            ->with('publisher', 'language', 'book', 'thesis', 'dissertation', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
             ->when($validated['query'], function ($q, $search) {
                 $terms = explode(' ', $search);
                 foreach ($terms as $term) {
@@ -61,7 +61,7 @@ class ItemController extends Controller
                 }
             })
             ->when(! empty($validated['type']), function ($q) use ($validated) {
-                $q->where('item_type_id', $validated['type']);
+                $q->where('item_type', $validated['type']);
             })
             ->when(! empty($validated['language_id']), function ($q) use ($validated) {
                 $q->where('language_id', $validated['language_id']);
@@ -91,7 +91,7 @@ class ItemController extends Controller
     public function thisItem($id)
     {
         $item = Item::find($id)->load(
-            'itemType', 'language', 'book', 'thesis',
+            'language', 'book', 'thesis',
             'audio', 'serial', 'periodical', 'electronic',
             'vertical', 'newspaper'); // Load item's additional information
 
