@@ -12,4 +12,9 @@ class Author extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function item()
+    {
+        return $this->belongsToMany(Item::class, 'items_authors', 'author_id', 'item_id');
+    }
 }

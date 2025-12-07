@@ -18,6 +18,7 @@ use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramsController;
 use App\Http\Controllers\PublisherController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserLogController;
 use App\Models\Language;
@@ -71,6 +72,19 @@ Route::group(['prefix' => '/department'], function () {
 
 });
 
+// Branches Routes
+Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], function () { // ♥
+    Route::get('/all', [BranchController::class, 'all']); // ♥
+    Route::get('/read/{campus_id}', [BranchController::class, 'get']); // ♥
+    Route::post('/create', [BranchController::class, 'add']); // ♥
+    Route::post('/update', [BranchController::class, 'update']); // ♥
+    Route::delete('/delete', [BranchController::class, 'delete']); // ♥
+});
+
+Route::group(['prefix' => '/sections'], function () {
+    Route::get('/{branch}', [SectionController::class, 'index']);
+});
+
 // Program Routes
 Route::group(['prefix' => 'program'], function () {
     Route::get('/read/from-campus/{id}', [ProgramsController::class, 'readFromCampus']); // ♥
@@ -81,15 +95,6 @@ Route::group(['prefix' => 'program'], function () {
     Route::post('/updateProgram', [ProgramController::class, 'update']); // ♥
     Route::post('/deleteProgram', [ProgramController::class, 'delete']); // ♥
 
-});
-
-// Branches Routes
-Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], function () { // ♥
-    Route::get('/all', [BranchController::class, 'all']); // ♥
-    Route::get('/read/{campus_id}', [BranchController::class, 'get']); // ♥
-    Route::post('/create', [BranchController::class, 'add']); // ♥
-    Route::post('/update', [BranchController::class, 'update']); // ♥
-    Route::delete('/delete', [BranchController::class, 'delete']); // ♥
 });
 
 // Patron Types

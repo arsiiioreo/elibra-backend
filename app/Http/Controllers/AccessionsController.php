@@ -102,4 +102,50 @@ class AccessionsController extends Controller
             ]);
         }
     }
+
+    public static function create($request, $item, $acquisition)
+    {
+        $prefixes = [
+            'book' => ['value' => 'BK'],
+            'thesis' => ['value' => 'UT'],
+            'dissertation' => ['value' => 'GT'],
+            'audio' => ['value' => 'AU'],
+            'serial' => ['value' => 'SE'],
+            'periodical' => ['value' => 'PE'],
+            'electronic' => ['value' => 'EL'],
+            'vertical' => ['value' => 'VF'],
+            'newspaper' => ['value' => 'NC'],
+        ];
+
+        $prefix = $prefixes[$item->item_type];
+
+        // ✅ Get last number ONCE
+        $last = Accessions::where('accession_code', 'like', $prefix['value'].'%')
+            ->orderBy('accession_code', 'desc')
+            ->first();
+
+        $lastNumber = $last
+            ? intval(substr($last->accession_code, strlen($prefix['value'])))
+            : 0;
+
+        for ($i = 0; $i < $request->copies; $i++) {
+
+            // ✅ Increment PROPERLY
+            $lastNumber++;
+            $newAccessionNumber = $prefix['value'].str_pad($lastNumber, 7, '0', STR_PAD_LEFT);
+
+            // ✅ Create accession
+            Accessions::create([
+                'accession_code' => $newAccessionNumber,
+                'shelf_location' => $request->shelf_location ?? 'No information yet, try checking the location details.',
+                'status' => 'available',
+                // 'date_acquired' => now(),
+                'remarks' => $request->accession_remarks,
+
+                'item_id' => $item->id,
+                'section_id' => $request->section_id,
+                'acquisition_id' => $acquisition->id,
+            ]);
+        }
+    }
 }

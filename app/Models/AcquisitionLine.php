@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class AcquisitionLine extends Model
 {
     protected $fillable = [
-        'acquisition_id',
-        'item_id',
-        'accession_id',
         'quantity',
         'unit_price',
         'discount',
-        'net_price'
+        'net_price',
+
+        'acquisition_id',
+        'item_id',
     ];
 }

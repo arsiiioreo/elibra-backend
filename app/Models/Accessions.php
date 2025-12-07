@@ -10,15 +10,15 @@ class Accessions extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'item_id',
-        'accession_number',
+        'accession_code',
         'shelf_location',
         'status',
-        'branch_id',
         'date_acquired',
+        'remarks',
+
+        'item_id',
+        'section_id',
         'acquisition_id',
-        'price',
-        'remarks'
     ];
 
     public function branch() {

@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Acquisition;
+use App\Models\AcquisitionLine;
 use App\Models\Item;
 use App\Services\ItemCatalogService;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ItemController extends Controller
@@ -46,54 +50,59 @@ class ItemController extends Controller
     public function index(Request $request)
     {
         $validated = $this->validation($request);
+        try {
+            $items = Item::query()
+                ->whereNull('deleted_at')
+                ->with('publisher', 'language', 'book', 'thesis',
+                    'dissertation', 'audio', 'serial', 'periodical', 'electronic',
+                    'vertical', 'newspaper', 'accession.branch.campus', 'authors') // Add
+                ->when($validated['query'], function ($q, $search) {
+                    $terms = explode(' ', $search);
+                    foreach ($terms as $term) {
+                        $q->where(function ($inner) use ($term) {
+                            $inner
+                                ->where('title', 'like', "%$term%")
+                                ->orWhere('isbn_issn', 'like', "%$term%");
+                        });
+                    }
+                })
+                ->when(! empty($validated['type']), function ($q) use ($validated) {
+                    $q->where('item_type', $validated['type']);
+                })
+                ->when(! empty($validated['language_id']), function ($q) use ($validated) {
+                    $q->where('language_id', $validated['language_id']);
+                })
+                ->when($validated['year_from'] || $validated['year_to'], function ($q) use ($validated) {
+                    if ($validated['year_from']) {
+                        $q->where('year_published', '>=', $validated['year_from']);
+                    }
+                    if ($validated['year_to']) {
+                        $q->where('year_published', '<=', $validated['year_to']);
+                    }
+                })
+                ->orderBy($validated['sort'], $validated['order']);
 
-        $items = Item::query()
-            ->whereNull('deleted_at')
-            ->with('publisher', 'language', 'book', 'thesis', 'dissertation', 'audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
-            ->when($validated['query'], function ($q, $search) {
-                $terms = explode(' ', $search);
-                foreach ($terms as $term) {
-                    $q->where(function ($inner) use ($term) {
-                        $inner
-                            ->where('title', 'like', "%$term%")
-                            ->orWhere('isbn_issn', 'like', "%$term%");
-                    });
-                }
-            })
-            ->when(! empty($validated['type']), function ($q) use ($validated) {
-                $q->where('item_type', $validated['type']);
-            })
-            ->when(! empty($validated['language_id']), function ($q) use ($validated) {
-                $q->where('language_id', $validated['language_id']);
-            })
-            ->when($validated['year_from'] || $validated['year_to'], function ($q) use ($validated) {
-                if ($validated['year_from']) {
-                    $q->where('year_published', '>=', $validated['year_from']);
-                }
-                if ($validated['year_to']) {
-                    $q->where('year_published', '<=', $validated['year_to']);
-                }
-            })
-            ->orderBy($validated['sort'], $validated['order']);
-
-        if ($request->boolean('paginate')) {
-            return response()->json($items->paginate(
-                $validated['entries'],
-                ['*'],
-                'page',
-                $validated['page']
-            ));
-        } else {
-            return response()->json(['data' => $items->get()]);
+            if ($request->boolean('paginate')) {
+                return response()->json($items->paginate(
+                    $validated['entries'],
+                    ['*'],
+                    'page',
+                    $validated['page']
+                ));
+            } else {
+                return response()->json(['data' => $items->get()]);
+            }
+        } catch (Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
         }
+
     }
 
     public function thisItem($id)
     {
-        $item = Item::find($id)->load(
-            'language', 'book', 'thesis',
-            'audio', 'serial', 'periodical', 'electronic',
-            'vertical', 'newspaper'); // Load item's additional information
+        $item = Item::find($id)->load('publisher', 'language', 'book', 'thesis',
+            'dissertation', 'audio', 'serial', 'periodical', 'electronic',
+            'vertical', 'newspaper', 'accession.branch.campus', 'authors.author');
 
         return response()->json($item);
     }
@@ -105,11 +114,9 @@ class ItemController extends Controller
             'title' => 'required|string|max:255',
             'call_number' => 'required|string|max:100',
             'year_published' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
-            'item_type' => 'required|integer|in:audio,book,dissertation,electronic,newspaper,
-                        periodical,serial,vertical',
-
+            'item_type' => 'required|string|in:audio,book,dissertation,electronic,newspaper,periodical,serial,thesis,vertical',
             'description' => 'nullable|string',
-            'maintext_raw' => 'nullable|json',
+            'maintext_raw' => 'sometimes|json',
 
             'language_id' => 'nullable|integer|exists:languages,id',
             'publisher_id' => 'nullable|integer|exists:publishers,id',
@@ -117,30 +124,63 @@ class ItemController extends Controller
 
         $validatedBase = $request->validate($baseRules);
 
-        $item = Item::create([
-            'title' => $request->title,
-            'call_number' => $request->call_number,
-            'year_published' => $request->year_published,
-            'item_type' => $request->item_type,
+        try {
+            DB::beginTransaction();
+            $item = Item::create([
+                'title' => $request->title,
+                'call_number' => $request->call_number,
+                'year_published' => $request->year_published,
+                'item_type' => $request->item_type,
 
-            'description' => $request->description ?? null,
-            'maintext_raw' => $request->maintext_raw ?? null,
+                'description' => $request->description ?? null,
+                'maintext_raw' => $request->maintext_raw ?? null,
 
-            'language_id' => $request->language_id,
-            'publisher_id' => $request->publisher_id,
-        ]);
+                'language_id' => $request->language_id,
+                'publisher_id' => $request->publisher_id,
+            ]);
 
-        if ($item) {
+            if ($item) {
+                ExtendedBibliography::create($request, $item);
+
+                $authors = collect($request->authors)->pluck('id')->toArray();
+                $item->authors()->sync($authors);
+
+                $acquisition = Acquisition::create([
+                    'acquisition_mode' => $request->acquisition_mode,
+                    'acquisition_date' => $request->acquisition_date,
+                    'dealer' => $request->dealer,
+                    'remarks' => $request->acquisition_remarks,
+
+                    'received_by' => auth('api')->user()->librarian->id,
+                ]);
+
+                $acquisitionLines = AcquisitionLine::create([
+                    'quantity' => $request->copies,
+                    'unit_price' => $request->price,
+                    'discount' => $request->discount ?? 0,
+                    'net_price' => $request->net_price ?? ($request->copies * $request->price) - $request->discount,
+                    'acquisition_id' => $acquisition->id,
+                    'item_id' => $item->id,
+                ]);
+
+                AccessionsController::create($request, $item, $acquisition);
+            }
+
+            DB::commit();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Item created successfully',
             ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ]);
         }
 
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Something went wrong. Please try again.',
-        ]);
     }
 
     protected function normalizeTypeName(string $name): string

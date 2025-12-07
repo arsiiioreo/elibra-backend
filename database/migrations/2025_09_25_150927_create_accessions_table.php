@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('accession_code');
             $table->string('shelf_location');
-            $table->enum('status', ['available', 'on_load', 'lost', 'missing', 'archived', 'condemned'])->default('available');
-            $table->dateTime('date_acquired');
+            $table->enum('status', ['available', 'reserved', 'on_load', 'lost', 'missing', 'archived', 'condemned'])->default('available');
+            // $table->dateTime('date_acquired');
             $table->string('remarks')->nullable();
             $table->timestamps();
             $table->softDeletes();

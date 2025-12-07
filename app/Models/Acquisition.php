@@ -7,11 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Acquisition extends Model
 {
     protected $fillable = [
-        'purchase_order',
-        'dealer',
+        'purchaseId',
         'acquisition_mode',
+        'dealer',
         'acquisition_date',
-        'total_cost',
-        'remarks'
+        'remarks',
+
+        'received_by',
     ];
+
+    public function item()
+    {
+        return $this->belongsToMany(Item::class, 'acquisition_lines', 'acquisition_id', 'item_id');
+    }
 }

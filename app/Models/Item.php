@@ -29,7 +29,12 @@ class Item extends Model
 
     public function authors()
     {
-        return $this->hasMany(ItemAuthors::class, 'item_id', 'id');
+        return $this->belongsToMany(Author::class, 'item_authors', 'item_id', 'author_id')->withPivot(['authorship']);
+    }
+
+    public function acquisition()
+    {
+        return $this->belongsToMany(Acquisition::class, 'acquisition_lines', 'item_id', 'acquisition_id');
     }
 
     public function publisher()
