@@ -104,8 +104,9 @@ Route::get('/patron-types', [PatronTypesController::class, 'index']); // ♥
 Route::group(['prefix' => '/item'], function () {
     Route::get('/get', [ItemController::class, 'index']); // ♥
     Route::get('/get/{id}', [ItemController::class, 'thisItem']); // ♥
-
     Route::post('/add', [ItemController::class, 'create']); // ♥
+
+    Route::post('/update/{id}x', [ItemController::class, 'update']); // ♥
 });
 
 // Acquisition Requests

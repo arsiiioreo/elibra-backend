@@ -16,13 +16,15 @@ return new class extends Migration
             $table->string('title');
             $table->string('call_number');
             $table->year('year_published')->nullable();
+            $table->string('place_of_publication')->nullable();
             $table->enum('item_type', ['audio', 'book', 'dissertation', 'electronic', 'newspaper', 'periodical', 'serial', 'thesis', 'vertical']);
-            
+
             $table->string('description')->nullable();
             $table->json('maintext_raw')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
+            $table->unsignedBigInteger('branch_id')->nullable();
             $table->unsignedBigInteger('language_id')->nullable();
             $table->unsignedBigInteger('publisher_id')->nullable();
             $table->index(['title', 'call_number'], 'items');

@@ -4,10 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,7 +14,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
-    use HasFactory, Notifiable, HasApiTokens, SoftDeletes;
+    use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     public function getJWTIdentifier()
     {
@@ -26,7 +24,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function getJWTCustomClaims()
     {
         return [
-            'role'  => $this->role,
+            'role' => $this->role,
         ];
     }
 
@@ -50,7 +48,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'password',
         'remember_token',
     ];
-
 
     protected function casts(): array
     {
@@ -77,7 +74,6 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->role === '2';
     }
 
-
     // Relationships
 
     public function patron()
@@ -88,6 +84,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function librarian()
     {
         return $this->hasOne(Librarian::class, 'user_id');
+    }
+
+    public function section()
+    {
+        return $this->belongsTo($this->librarian(), 'section_id');
     }
 
     public function profile_photos()

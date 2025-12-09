@@ -70,7 +70,7 @@ class UserController extends Controller
         if ($auth->role === '0') {
             $users = User::query()
                 ->withTrashed()
-                ->with(['librarian.branch.campus', 'patron.program.department.campus'])
+                ->with(['librarian.section.branch.campus', 'patron.program.department.campus'])
                 ->when($validated['query'], function ($q, $search) {
                     $terms = explode(' ', $search);
                     foreach ($terms as $term) {
@@ -134,8 +134,10 @@ class UserController extends Controller
 
         foreach ($users as $user) {
             // $user->status = $user->status === '0' ? 'Active' : ($user->status === '1' ? 'Suspended' : 'Expired');
-            if (!$user->profile_picture) $user->profile_picture = asset('logo.png');
-            $user->name = $user->first_name . ' ' . ($user->middle_initial ? $user->middle_initial . '. ' : '') . ' ' . $user->last_name;
+            if (! $user->profile_picture) {
+                $user->profile_picture = asset('logo.png', true);
+            }
+            $user->name = $user->first_name.' '.($user->middle_initial ? $user->middle_initial.'. ' : '').' '.$user->last_name;
             switch ($user->role) {
                 case '0':
                     $user->roleText = 'Administrator';
@@ -319,14 +321,14 @@ class UserController extends Controller
             ]);
 
             // Create librarian if applicable
-            if ($user) { 
+            if ($user) {
                 ActivityLog::create([
                     'user_id' => $man->id,
                     'affected_user_id' => $user->id,
                     'title' => 'Account Created',
-                    'description' => $man->first_name . ' created an account for ' . $user->first_name
+                    'description' => $man->first_name.' created an account for '.$user->first_name,
                 ]);
-                
+
                 if ($user->role === '1') {
                     Librarian::create([
                         'user_id' => $user->id,
@@ -338,7 +340,7 @@ class UserController extends Controller
                         'user_id' => $user->id,
                         'patron_type_id' => $validated['patron_type_id'],
                     ]);
-    
+
                     if (in_array($validated['patron_type_id'], [1, 2])) {
                         $patron->id_number = $validated['id_number'];
                         $patron->program_id = $validated['program_id'];
@@ -346,12 +348,11 @@ class UserController extends Controller
                     } else {
                         $patron->external_organization = $validated['external_organization'];
                         $patron->save();
-    
+
                     }
                 }
                 DB::commit();
             }
-
 
             return response()->json([
                 'status' => 'success',

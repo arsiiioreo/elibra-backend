@@ -128,7 +128,8 @@ class AccessionsController extends Controller
             ? intval(substr($last->accession_code, strlen($prefix['value'])))
             : 0;
 
-        for ($i = 0; $i < $request->copies; $i++) {
+        $acq = $request->acquisition;
+        for ($i = 0; $i < $acq['copies']; $i++) {
 
             // ✅ Increment PROPERLY
             $lastNumber++;
@@ -137,10 +138,9 @@ class AccessionsController extends Controller
             // ✅ Create accession
             Accessions::create([
                 'accession_code' => $newAccessionNumber,
-                'shelf_location' => $request->shelf_location ?? 'No information yet, try checking the location details.',
+                'shelf_location' => $acq['shelf_location'] ?? 'No information yet, try checking the location details.',
                 'status' => 'available',
-                // 'date_acquired' => now(),
-                'remarks' => $request->accession_remarks,
+                'remarks' => $acq['accession_remarks'] ?? null,
 
                 'item_id' => $item->id,
                 'section_id' => $request->section_id,

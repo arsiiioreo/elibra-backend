@@ -21,7 +21,8 @@ class Accessions extends Model
         'acquisition_id',
     ];
 
-    public function branch() {
-        return $this->belongsTo(Branch::class);
+    public function section()
+    {
+        return $this->belongsTo(Section::class);
     }
 }

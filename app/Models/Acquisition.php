@@ -20,4 +20,9 @@ class Acquisition extends Model
     {
         return $this->belongsToMany(Item::class, 'acquisition_lines', 'acquisition_id', 'item_id');
     }
+
+    public function acquisition_lines()
+    {
+        return $this->belongsTo(AcquisitionLine::class, 'id', 'acquisition_id');
+    }
 }

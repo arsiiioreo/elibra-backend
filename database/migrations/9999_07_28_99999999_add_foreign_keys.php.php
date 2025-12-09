@@ -56,6 +56,7 @@ return new class extends Migration
 
         // Items Up
         Schema::table('items', function (Blueprint $table) {
+            $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
             $table->foreign('publisher_id')->references('id')->on('publishers')->onDelete('cascade');
             $table->foreign('language_id')->references('id')->on('languages')->onDelete('cascade');
         });

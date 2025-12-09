@@ -55,7 +55,7 @@ class ItemController extends Controller
                 ->whereNull('deleted_at')
                 ->with('publisher', 'language', 'book', 'thesis',
                     'dissertation', 'audio', 'serial', 'periodical', 'electronic',
-                    'vertical', 'newspaper', 'accession.branch.campus', 'authors') // Add
+                    'vertical', 'newspaper', 'accession.section.branch.campus', 'authors') // Add
                 ->when($validated['query'], function ($q, $search) {
                     $terms = explode(' ', $search);
                     foreach ($terms as $term) {
@@ -102,9 +102,9 @@ class ItemController extends Controller
     {
         $item = Item::find($id)->load('publisher', 'language', 'book', 'thesis',
             'dissertation', 'audio', 'serial', 'periodical', 'electronic',
-            'vertical', 'newspaper', 'accession.branch.campus', 'authors.author');
+            'vertical', 'newspaper', 'accession.section.branch.campus', 'authors', 'acquisition.acquisition_lines'); // Add
 
-        return response()->json($item);
+        return response()->json(['data' => $item]);
     }
 
     public function create(Request $request)
@@ -130,11 +130,13 @@ class ItemController extends Controller
                 'title' => $request->title,
                 'call_number' => $request->call_number,
                 'year_published' => $request->year_published,
+                'place_of_publication' => $request->place_of_publication,
                 'item_type' => $request->item_type,
 
                 'description' => $request->description ?? null,
                 'maintext_raw' => $request->maintext_raw ?? null,
 
+                'branch_id' => $request->branch_id,
                 'language_id' => $request->language_id,
                 'publisher_id' => $request->publisher_id,
             ]);
@@ -145,20 +147,27 @@ class ItemController extends Controller
                 $authors = collect($request->authors)->pluck('id')->toArray();
                 $item->authors()->sync($authors);
 
+                $acq = $request->acquisition;
+                $lastId = Acquisition::max('id') ?? 0;
+                $nextId = $lastId + 1;
+
+                $purchaseId = 'REF-'.str_pad($nextId, 8, '0', STR_PAD_LEFT);
+
                 $acquisition = Acquisition::create([
-                    'acquisition_mode' => $request->acquisition_mode,
-                    'acquisition_date' => $request->acquisition_date,
-                    'dealer' => $request->dealer,
-                    'remarks' => $request->acquisition_remarks,
+                    'purchaseId' => $purchaseId,
+                    'acquisition_mode' => $acq['acquisition_mode'],
+                    'acquisition_date' => $acq['acquisition_date'],
+                    'dealer' => $acq['dealer'],
+                    'remarks' => $acq['acquisition_remarks'] ?? null,
 
                     'received_by' => auth('api')->user()->librarian->id,
                 ]);
 
                 $acquisitionLines = AcquisitionLine::create([
-                    'quantity' => $request->copies,
-                    'unit_price' => $request->price,
-                    'discount' => $request->discount ?? 0,
-                    'net_price' => $request->net_price ?? ($request->copies * $request->price) - $request->discount,
+                    'quantity' => $acq['copies'],
+                    'unit_price' => $acq['acquisition_mode'] === 'purchased' ? $acq['price'] : 0,
+                    'discount' => $acq['discount'] ?? 0,
+                    'net_price' => $acq['net_price'] ?? ($acq['copies'] * $acq['price']) - $acq['discount'],
                     'acquisition_id' => $acquisition->id,
                     'item_id' => $item->id,
                 ]);
@@ -171,6 +180,86 @@ class ItemController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Item created successfully',
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+    }
+
+    public function update(Request $request, $id)
+    {
+        // 1) base validation for Item common fields
+        $baseRules = [
+            'title' => 'required|string|max:255',
+            'call_number' => 'required|string|max:100',
+            'year_published' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
+            'item_type' => 'required|string|in:audio,book,dissertation,electronic,newspaper,periodical,serial,thesis,vertical',
+            'description' => 'nullable|string',
+            'maintext_raw' => 'sometimes|json',
+
+            'language_id' => 'nullable|integer|exists:languages,id',
+            'publisher_id' => 'nullable|integer|exists:publishers,id',
+        ];
+
+        $validatedBase = $request->validate($baseRules);
+
+        try {
+            $item = Item::find($id);
+
+            DB::beginTransaction();
+            $item->title = $request->title ?? $item->title;
+            $item->call_number = $request->call_number ?? $item->call_number;
+            $item->year_published = $request->year_published ?? $item->year_published;
+            $item->place_of_publication = $request->place_of_publication ?? $item->place_of_publication;
+            $item->item_type = $request->item_type ?? $item->item_type;
+
+            $item->description = $request->description ?? $item->description;
+            $item->maintext_raw = $request->maintext_raw ?? null;
+
+            $item->branch_id = $request->branch_id ?? $item->branch_id;
+            $item->language_id = $request->language_id ?? $item->language_id;
+            $item->publisher_id = $request->publisher_id ?? $item->publisher_id;
+
+            if ($item) {
+                ExtendedBibliography::update($request, $item);
+
+                // $authors = collect($request->authors)->pluck('id')->toArray();
+                // $item->authors()->sync($authors);
+
+                // $acq = $request->acquisition;
+
+                // $acquisition = Acquisition::create([
+                //     'acquisition_mode' => $acq['acquisition_mode'],
+                //     'acquisition_date' => $acq['acquisition_date'],
+                //     'dealer' => $acq['dealer'],
+                //     'remarks' => $acq['acquisition_remarks'] ?? null,
+
+                //     'received_by' => auth('api')->user()->librarian->id,
+                // ]);
+
+                // $acquisitionLines = AcquisitionLine::create([
+                //     'quantity' => $acq['copies'],
+                //     'unit_price' => $acq['price'],
+                //     'discount' => $acq['discount'] ?? 0,
+                //     'net_price' => $acq['net_price'] ?? ($acq['copies'] * $acq['price']) - $acq['discount'],
+                //     'acquisition_id' => $acquisition->id,
+                //     'item_id' => $item->id,
+                // ]);
+            }
+
+            $item->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Item updated successfully.',
             ]);
         } catch (Exception $e) {
             DB::rollBack();

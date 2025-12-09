@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('purchaseId')->nullable(); // ISU-E-2025-MM-DD-ID
             $table->enum('acquisition_mode', ['purchased', 'donated', 'gift', 'exchange']);
             $table->string('dealer');
-            $table->dateTime('acquisition_date');
+            $table->date('acquisition_date');
             $table->string('remarks')->nullable();
 
             // $table->float('price')->default(0);

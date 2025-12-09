@@ -13,11 +13,13 @@ class Item extends Model
         'title',
         'call_number',
         'year_published',
+        'place_of_publication',
         'item_type',
 
         'description',
         'maintext_raw',
 
+        'branch_id',
         'publisher_id',
         'language_id',
     ];
@@ -34,7 +36,7 @@ class Item extends Model
 
     public function acquisition()
     {
-        return $this->belongsToMany(Acquisition::class, 'acquisition_lines', 'item_id', 'acquisition_id');
+        return $this->belongsToMany(Acquisition::class, 'acquisition_lines', 'item_id', 'acquisition_id')->withPivot(['quantity']);
     }
 
     public function publisher()
