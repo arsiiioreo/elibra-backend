@@ -9,9 +9,9 @@ class AttendanceLog extends Model
 {
     protected $fillable = [
         'patron_id',
-        'branches_id',
+        'section_id',
         'status',
-        'created_at'
+        'created_at',
     ];
 
     public function patron()
@@ -19,7 +19,7 @@ class AttendanceLog extends Model
         return $this->belongsTo(Patron::class, 'patron_id', 'id');
     }
 
-    public function branch() : BelongsTo 
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class, 'branches_id', 'id');
     }

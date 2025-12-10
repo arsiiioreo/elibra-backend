@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -42,22 +41,23 @@ class OpacController extends Controller
 
         $items = Item::query()
             ->whereNull('deleted_at')
-            ->with('publisher', 'itemType', 'language', 'book', 'thesis', 'dissertation','audio', 'serial', 'periodical', 'electronic', 'vertical', 'newspaper', 'accession.branch.campus', 'authors.author') // Add
+            ->with('publisher', 'language', 'book', 'thesis',
+                'dissertation', 'audio', 'serial', 'periodical', 'electronic',
+                'vertical', 'newspaper', 'accession.section.branch.campus', 'authors') // Add
             ->when($validated['query'], function ($q, $search) {
                 $terms = explode(' ', $search);
                 foreach ($terms as $term) {
                     $q->where(function ($inner) use ($term) {
                         $inner
                             ->where('title', 'like', "%$term%")
-                            ->orWhere('isbn_issn', 'like', "%$term%")
-                            ;
+                            ->orWhere('isbn_issn', 'like', "%$term%");
                     });
                 }
             })
-            ->when(!empty($validated['type']), function ($q) use ($validated) {
-                $q->where('item_type_id', $validated['type']);
+            ->when(! empty($validated['type']), function ($q) use ($validated) {
+                $q->where('item_type', $validated['type']);
             })
-            ->when(!empty($validated['language_id']), function ($q) use ($validated) {
+            ->when(! empty($validated['language_id']), function ($q) use ($validated) {
                 $q->where('language_id', $validated['language_id']);
             })
             ->when($validated['year_from'] || $validated['year_to'], function ($q) use ($validated) {
