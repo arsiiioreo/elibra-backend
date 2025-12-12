@@ -136,7 +136,7 @@ class ItemController extends Controller
                 'description' => $request->description ?? null,
                 'maintext_raw' => $request->maintext_raw ?? null,
 
-                'branch_id' => $request->branch_id,
+                'branch_id' => auth('api')->user()->librarian->section->branch->id,
                 'language_id' => $request->language_id,
                 'publisher_id' => $request->publisher_id,
             ]);
@@ -151,7 +151,8 @@ class ItemController extends Controller
                 $lastId = Acquisition::max('id') ?? 0;
                 $nextId = $lastId + 1;
 
-                $purchaseId = 'REF-'.str_pad($nextId, 8, '0', STR_PAD_LEFT);
+                // $purchaseId = 'REF'.now()->format('YmdHis').'-'.str_pad($nextId, 8, '0', STR_PAD_LEFT);
+                $purchaseId = 'REF'.now()->format('YmdHis').str_pad($nextId, 8, '0', STR_PAD_LEFT);
 
                 $acquisition = Acquisition::create([
                     'purchaseId' => $purchaseId,
@@ -272,11 +273,68 @@ class ItemController extends Controller
 
     }
 
-    protected function normalizeTypeName(string $name): string
+    public function acquiredNewCopies(Request $request, $id)
     {
-        $parts = preg_split('/[^A-Za-z0-9]+/', $name);
-        $parts = array_map(fn ($p) => ucfirst(strtolower($p)), array_filter($parts));
+        // 1) base validation for Item common fields
+        $request->validate([
+            'acquisition.acquisition_mode' => 'required|in:gift,donated,exchange,purchased',
+            'acquisition.acquisition_date' => 'required|date',
+            'acquisition.dealer' => 'required|string|max:255',
+            'acquisition.copies' => 'required|integer|min:1|max:199',
+            'acquisition.price' => 'nullable|required_if:acquisition.acquisition_mode,purchased|numeric|min:0',
+            'acquisition.acquisition_remarks' => 'required|string|max:255',
+        ]);
 
-        return implode('', $parts);
+        try {
+            DB::beginTransaction();
+            $item = Item::findOrFail($id);
+            $acq = $request->input('acquisition');
+
+            if ($item) {
+                $lastId = Acquisition::max('id') ?? 0;
+                $nextId = $lastId + 1;
+
+                // $purchaseId = 'REF'.now()->format('YmdHis').'-'.str_pad($nextId, 8, '0', STR_PAD_LEFT);
+                $purchaseId = 'REF'.now()->format('YmdHis').$nextId;
+
+                $acquisition = Acquisition::create([
+                    'purchaseId' => $purchaseId,
+                    'acquisition_mode' => $acq['acquisition_mode'],
+                    'acquisition_date' => $acq['acquisition_date'],
+                    'dealer' => $acq['dealer'],
+                    'remarks' => $acq['acquisition_remarks'] ?? null,
+                    'received_by' => auth('api')->user()->librarian->id,
+                ]);
+
+                AcquisitionLine::create([
+                    'quantity' => $acq['copies'],
+                    'unit_price' => $acq['acquisition_mode'] === 'purchased' ? $acq['price'] : 0,
+                    'discount' => 0,
+                    'net_price' => $acq['acquisition_mode'] === 'purchased'
+                        ? $acq['copies'] * $acq['price']
+                        : 0,
+                    'acquisition_id' => $acquisition->id,
+                    'item_id' => $item->id,
+                ]);
+
+                AccessionsController::create($request, $item, $acquisition);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'New acquisitions added successfully',
+                'acquisition_id' => $acquisition->id,
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ]);
+        }
+
     }
 }

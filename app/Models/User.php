@@ -57,6 +57,21 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         ];
     }
 
+    public function getFullNameNormalAttribute()
+    {
+        return trim("{$this->first_name} {$this->middle_name} {$this->last_name}");
+    }
+
+    public function getFullNameFormalAttribute()
+    {
+        return trim("{$this->last_name}, {$this->first_name} {$this->middle_name} {$this->last_name}");
+    }
+
+    public function getRoleTextAttribute()
+    {
+        return $this->role === '0' ? 'Admin' : ($this->role === '1' ? 'Librarian' : ($this->role === '2' ? 'Patron' : 'Alien'));
+    }
+
     // User Roles
 
     public function getIsAdminAttribute()

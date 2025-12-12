@@ -25,4 +25,14 @@ class Acquisition extends Model
     {
         return $this->belongsTo(AcquisitionLine::class, 'id', 'acquisition_id');
     }
+
+    public function accession()
+    {
+        return $this->hasMany(Accessions::class, 'acquisition_id', 'id');
+    }
+
+    public function receiver()
+    {
+        return $this->belongsTo(Librarian::class, 'received_by');
+    }
 }
