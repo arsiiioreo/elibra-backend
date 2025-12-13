@@ -14,17 +14,10 @@ return new class extends Migration
         Schema::create('acquisitions', function (Blueprint $table) {
             $table->id();
             $table->string('purchaseId')->nullable(); // ISU-E-2025-MM-DD-ID
-            $table->enum('acquisition_mode', ['purchased', 'donated', 'gift', 'exchange']);
             $table->string('dealer');
+            $table->enum('acquisition_mode', ['purchased', 'donated', 'gift', 'exchange']);
             $table->date('acquisition_date');
             $table->string('remarks')->nullable();
-
-            // $table->float('price')->default(0);
-            // $table->float('copies')->default(0);
-            // $table->integer('quantity');
-            // $table->float('unit_price')->default(0);
-            // $table->float('discount')->default(0);
-            // $table->float('net_price')->default(0);
             $table->timestamps();
 
             $table->unsignedBigInteger('received_by');

@@ -282,7 +282,7 @@ class ItemController extends Controller
             'acquisition.dealer' => 'required|string|max:255',
             'acquisition.copies' => 'required|integer|min:1|max:199',
             'acquisition.price' => 'nullable|required_if:acquisition.acquisition_mode,purchased|numeric|min:0',
-            'acquisition.acquisition_remarks' => 'required|string|max:255',
+            // 'acquisition.acquisition_remarks' => 'required|string|max:255',
         ]);
 
         try {

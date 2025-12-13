@@ -106,31 +106,35 @@ class AccessionsController extends Controller
 
     public static function create($request, $item, $acquisition)
     {
-        // ✅ Get all section IDs under the librarian's branch
-        $sectionIds = Section::where(
-            'branch_id',
-            auth('api')->user()->librarian->section->branch->id
-        )->pluck('id');
+        // // ✅ Get all section IDs under the librarian's branch
+        // $sectionIds = Section::where(
+        //     'branch_id',
+        //     auth('api')->user()->librarian->section->branch->id
+        // )->pluck('id');
 
-        // ✅ Get last accession number for those sections
-        $last = Accessions::whereIn('section_id', $sectionIds)
-            ->orderBy('accession_number', 'desc')
-            ->first();
+        // // ✅ Get last accession number for those sections
+        // $last = Accessions::whereIn('section_id', $sectionIds)
+        //     ->orderBy('accession_number', 'desc')
+        //     ->first();
+        $branchId = auth('api')->user()->librarian->section->branch->id;
+
+        $lastAccession = Accessions::query()->select('accession_number')->whereHas('section.branch', function ($q) {
+            $q->where('id', 1);
+        })->orderBy('accession_number', 'DESC')->first();
 
         // ✅ Extract numeric value properly
-        $next = $last->accession_number ? intval($last->accession_number) + 1 : 1;
+        // $next = $last->accession_number ? intval($last->accession_number) + 1 : 1;
 
         $acq = $request->acquisition;
 
         for ($i = 0; $i < $acq['copies']; $i++) {
 
             // ✅ Format accession number (7 digits)
-            $newAccessionNumber = str_pad($next, 7, '0', STR_PAD_LEFT);
+            // $newAccessionNumber = str_pad($next, 7, '0', STR_PAD_LEFT);
 
             Accessions::create([
-                'accession_number' => $newAccessionNumber,
-                'shelf_location' => $acq['shelf_location']
-                    ?? 'No information yet, try checking the location details.',
+                'accession_number' => null,
+                'shelf_location' => $acq['shelf_location'] ?? 'No information yet, try checking the location details.',
                 'status' => 'available',
                 'remarks' => $acq['accession_remarks'] ?? null,
 
@@ -139,7 +143,7 @@ class AccessionsController extends Controller
                 'acquisition_id' => $acquisition->id,
             ]);
 
-            $next++;
+            // $next++;z
         }
     }
 }
