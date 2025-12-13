@@ -181,63 +181,84 @@ class AuthController extends Controller
     // Login
     public function login()
     {
-        $user = User::where('email', request('user'))->first() ??
-            Patron::where('id_number', request('user'))->first()?->user ?? Librarian::where('username', request('user'))->first()?->user;
+        try {
+            $id = request('user');
+            $password = request('password');
 
-        if (! $user) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'User not found.',
-            ]);
+            $user = $this->userLookUp($id);
 
-        }
-
-        if ($user && $user->login_attempt >= 5) {
-            return response()->json(['message' => 'Too many failed login attempts, please contact your administrator to reset your password or resolve this issue.'], 403);
-        }
-
-        if ($user && auth('api')->attempt(['email' => $user->email, 'password' => request('password')])) {
-            if ($user && $user->pending_registration_approval) {
-                return response()->json(['status' => 'error', 'errors' => [
-                    'users' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.',
-                ]]);
+            if (! $user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not found.',
+                ]);
             }
-            $token = auth('api')->login($user);
 
-            $user->login_attempt = 0;
-            $user->save();
+            if ($user && $user->login_attempt >= 5) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Too many failed login attempts, please contact your administrator to resolve this issue.',
+                ], 403);
+            }
 
-            ActivityLog::create([
-                'user_id' => auth('api')->user()->id,
-                'title' => 'Login',
-                'description' => 'You logged in.',
-            ]);
-
-            return $this->respondWithToken($token);
-        } else {
-            ActivityLog::create([
-                'user_id' => $user->id,
-                'title' => 'Invalid Login',
-                'description' => 'Incorrect password, attempt to login failed.',
-            ]);
-
-            if ($user->role != 0) {
-                $user->login_attempt += 1;
-
-                if ($user->login_attempt == 5) {
-                    $user->status = 1;
-                    ActivityLog::create([
-                        'user_id' => $user->id,
-                        'title' => 'Account Locked',
-                        'description' => 'Due to multiple login attempts, your account has been locked.',
+            if ($user && auth('api')->attempt(['email' => $user->email, 'password' => $password])) {
+                if ($user && $user->pending_registration_approval) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Account is pending for registration approval, please wait or contact the administrator to get a status update about your application.',
                     ]);
                 }
+
+                $token = auth('api')->login($user);
+
+                $user->login_attempt = 0;
                 $user->save();
+
+                ActivityLog::create([
+                    'user_id' => auth('api')->user()->id,
+                    'title' => 'Login',
+                    'description' => 'You logged in.',
+                ]);
+
+                return $this->respondWithToken($token);
+            } else {
+                ActivityLog::create([
+                    'user_id' => $user->id,
+                    'title' => 'Invalid Login',
+                    'description' => 'Incorrect password, attempt to login failed.',
+                ]);
+
+                if ($user->role != 0) {
+                    $user->login_attempt += 1;
+
+                    if ($user->login_attempt == 5) {
+                        $user->status = 1;
+                        ActivityLog::create([
+                            'user_id' => $user->id,
+                            'title' => 'Account Locked',
+                            'description' => 'Due to multiple login attempts, your account has been locked.',
+                        ]);
+                    }
+                    $user->save();
+                }
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Incorrect password, please try again.',
+                ]);
+            }
+        } catch (Exception $e) {
+            if ($e->getCode() === 2002) {
+                $message = 'No connection can be made to the server, please check your connection.';
+            } else {
+                $message = $e->getMessage();
             }
 
-            return response()->json(['status' => 'error',
-                'message' => 'Incorrect password, please try again.',
+            return response()->json([
+                'status' => 'error',
+                'message' => $message,
             ]);
+
         }
     }
 
@@ -350,5 +371,18 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'bearer',
         ]);
+    }
+
+    public function userLookUp($u)
+    {
+        if ($user = User::where('email', $u)->first()) {
+            return $user;
+        } elseif ($patron = Patron::where('id_number', $u)->first()) {
+            return $patron->user;
+        } elseif ($librarian = Librarian::where('username', $u)->first()) {
+            return $librarian->user;
+        }
+
+        return null;
     }
 }

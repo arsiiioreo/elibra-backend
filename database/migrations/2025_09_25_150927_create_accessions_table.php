@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('accessions', function (Blueprint $table) {
             $table->id();
-            $table->string('accession_code');
-            $table->string('shelf_location');
+            $table->string('accession_number')->nullable();
+            $table->string('shelf_location')->nullable();
             $table->enum('status', ['available', 'reserved', 'on_load', 'lost', 'missing', 'archived', 'condemned'])->default('available');
             // $table->dateTime('date_acquired');
             $table->string('remarks')->nullable();

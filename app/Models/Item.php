@@ -39,6 +39,11 @@ class Item extends Model
         return $this->belongsToMany(Acquisition::class, 'acquisition_lines', 'item_id', 'acquisition_id')->withPivot(['quantity']);
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
     public function publisher()
     {
         return $this->belongsTo(Publisher::class, 'publisher_id', 'id');

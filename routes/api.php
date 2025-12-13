@@ -14,6 +14,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\LibrarianController;
 use App\Http\Controllers\OpacController;
 use App\Http\Controllers\PatronTypesController;
+use App\Http\Controllers\PDFController;
 use App\Http\Controllers\ProfilePhotosController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ProgramsController;
@@ -45,14 +46,16 @@ Route::middleware(['jwt.auth'])->group(function () {
 });
 
 // Authentication Routes
-Route::post('/auth/login', [AuthController::class, 'login']); // ♥
-Route::get('/auth/logout', [AuthController::class, 'logout']); // ♥
-Route::post('/auth/register', [AuthController::class, 'register']); // ♥
-Route::get('auth/refresh', [AuthController::class, 'refresh']); // ♥
-Route::get('/auth/verify-email', [AuthController::class, 'verifyEmail']); // Verifying email during registration ♥
-// Route::get('/auth/verify-email/{token}/{otp}', [AuthController::class, 'verifyEmail']); // Verifying email during registration ♥
-Route::get('/auth/send-otp', [OTPVerifier::class, 'sendOTP'])->middleware('jwt.auth'); // Sending OTP for anything (email verification, 2FA, etc.) ♥
-Route::post('/auth/verify-otp', [OTPVerifier::class, 'verifyOTP'])->middleware('jwt.auth'); //
+Route::group(['prefix' => '/auth'], function () {
+    Route::post('/login', [AuthController::class, 'login']); // ♥
+    Route::get('/logout', [AuthController::class, 'logout']); // ♥
+    Route::post('/register', [AuthController::class, 'register']); // ♥
+    Route::get('/refresh', [AuthController::class, 'refresh']); // ♥
+    Route::get('/verify-email', [AuthController::class, 'verifyEmail']); // Verifying email during registration ♥
+    // Route::get('/auth/verify-email/{token}/{otp}', [AuthController::class, 'verifyEmail']); // Verifying email during registration ♥
+    Route::get('/send-otp', [OTPVerifier::class, 'sendOTP'])->middleware('jwt.auth'); // Sending OTP for anything (email verification, 2FA, etc.) ♥
+    Route::post('/verify-otp', [OTPVerifier::class, 'verifyOTP'])->middleware('jwt.auth'); //
+});
 
 // Campus, Department and Program Management Routes
 
@@ -106,7 +109,9 @@ Route::group(['prefix' => '/item'], function () {
     Route::get('/get/{id}', [ItemController::class, 'thisItem']); // ♥
     Route::post('/add', [ItemController::class, 'create']); // ♥
 
-    Route::post('/update/{id}x', [ItemController::class, 'update']); // ♥
+    Route::post('/update/new-acquisition-of/{id}', [ItemController::class, 'acquiredNewCopies']); // ♥
+
+    Route::post('/update/{id}', [ItemController::class, 'update']); // ♥
 });
 
 // Acquisition Requests
@@ -199,3 +204,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 });
 
 // All Users Routes
+
+// PDF Routes
+Route::group(['prefix' => '/extract'], function () {
+    Route::post('/acquisition_slip', [PDFController::class, 'acquisition_slip']);
+
+});

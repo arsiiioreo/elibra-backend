@@ -15,4 +15,14 @@ class AcquisitionLine extends Model
         'acquisition_id',
         'item_id',
     ];
+
+    public function acquisition()
+    {
+        return $this->belongsTo(Acquisition::class, 'acquisition_id', 'id');
+    }
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'item_id');
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\Accessions;
 use App\Models\Acquisition;
 use App\Models\Author;
 use App\Models\ItemAuthors;
+use App\Models\Section;
 
 class AccessionsController extends Controller
 {
@@ -105,47 +106,44 @@ class AccessionsController extends Controller
 
     public static function create($request, $item, $acquisition)
     {
-        $prefixes = [
-            'book' => ['value' => 'BK'],
-            'thesis' => ['value' => 'UT'],
-            'dissertation' => ['value' => 'GT'],
-            'audio' => ['value' => 'AU'],
-            'serial' => ['value' => 'SE'],
-            'periodical' => ['value' => 'PE'],
-            'electronic' => ['value' => 'EL'],
-            'vertical' => ['value' => 'VF'],
-            'newspaper' => ['value' => 'NC'],
-        ];
+        // // ✅ Get all section IDs under the librarian's branch
+        // $sectionIds = Section::where(
+        //     'branch_id',
+        //     auth('api')->user()->librarian->section->branch->id
+        // )->pluck('id');
 
-        $prefix = $prefixes[$item->item_type];
+        // // ✅ Get last accession number for those sections
+        // $last = Accessions::whereIn('section_id', $sectionIds)
+        //     ->orderBy('accession_number', 'desc')
+        //     ->first();
+        $branchId = auth('api')->user()->librarian->section->branch->id;
 
-        // ✅ Get last number ONCE
-        $last = Accessions::where('accession_code', 'like', $prefix['value'].'%')
-            ->orderBy('accession_code', 'desc')
-            ->first();
+        $lastAccession = Accessions::query()->select('accession_number')->whereHas('section.branch', function ($q) {
+            $q->where('id', 1);
+        })->orderBy('accession_number', 'DESC')->first();
 
-        $lastNumber = $last
-            ? intval(substr($last->accession_code, strlen($prefix['value'])))
-            : 0;
+        // ✅ Extract numeric value properly
+        // $next = $last->accession_number ? intval($last->accession_number) + 1 : 1;
 
         $acq = $request->acquisition;
+
         for ($i = 0; $i < $acq['copies']; $i++) {
 
-            // ✅ Increment PROPERLY
-            $lastNumber++;
-            $newAccessionNumber = $prefix['value'].str_pad($lastNumber, 7, '0', STR_PAD_LEFT);
+            // ✅ Format accession number (7 digits)
+            // $newAccessionNumber = str_pad($next, 7, '0', STR_PAD_LEFT);
 
-            // ✅ Create accession
             Accessions::create([
-                'accession_code' => $newAccessionNumber,
+                'accession_number' => null,
                 'shelf_location' => $acq['shelf_location'] ?? 'No information yet, try checking the location details.',
                 'status' => 'available',
                 'remarks' => $acq['accession_remarks'] ?? null,
 
                 'item_id' => $item->id,
-                'section_id' => $request->section_id,
+                'section_id' => auth('api')->user()->librarian->section->id,
                 'acquisition_id' => $acquisition->id,
             ]);
+
+            // $next++;z
         }
     }
 }

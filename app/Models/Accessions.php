@@ -10,7 +10,7 @@ class Accessions extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'accession_code',
+        'accession_number',
         'shelf_location',
         'status',
         'date_acquired',
@@ -24,5 +24,10 @@ class Accessions extends Model
     public function section()
     {
         return $this->belongsTo(Section::class);
+    }
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'item_id');
     }
 }
