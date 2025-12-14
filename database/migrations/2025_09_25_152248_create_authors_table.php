@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('authors', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('last_name');
+            $table->string('first_name');
+            $table->string('middle_initial')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

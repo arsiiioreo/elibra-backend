@@ -24,6 +24,16 @@ class Item extends Model
         'language_id',
     ];
 
+    public function setTitleAttribute($value)
+    {
+        $this->attributes['title'] = ucwords(strtolower($value));
+    }
+
+    public function setPlaceOfPublicationAttribute($value)
+    {
+        $this->attributes['place_of_publication'] = ucwords(strtolower($value));
+    }
+
     public function accession()
     {
         return $this->hasMany(Accessions::class, 'item_id', 'id');
@@ -31,7 +41,7 @@ class Item extends Model
 
     public function authors()
     {
-        return $this->belongsToMany(Author::class, 'item_authors', 'item_id', 'author_id')->withPivot(['authorship']);
+        return $this->belongsToMany(Author::class, 'item_authors', 'item_id', 'author_id')->withPivot(['role']);
     }
 
     public function acquisition()

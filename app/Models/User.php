@@ -44,6 +44,24 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'profile_picture',
     ];
 
+    public function setLastNameAttribute($value)
+    {
+        $this->attributes['last_name'] =
+            ucwords(strtolower(trim($value)));
+    }
+
+    public function setFirstNameAttribute($value)
+    {
+        $this->attributes['first_name'] =
+            ucwords(strtolower(trim($value)));
+    }
+
+    public function setMiddleInitialAttribute($value)
+    {
+        $this->attributes['first_name'] =
+            ucwords(strtolower(trim($value)));
+    }
+
     protected $hidden = [
         'password',
         'remember_token',
