@@ -12,6 +12,7 @@ class ItemAuthors extends Model
     protected $fillable = [
         'item_id',
         'author_id',
+        'role',
     ];
 
     public function author()

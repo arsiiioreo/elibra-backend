@@ -31,7 +31,7 @@ class ItemController extends Controller
             'year_from' => 'nullable|digits:4|integer|min:1000|max:'.date('Y'),
             'year_to' => 'nullable|digits:4|integer|min:1000|max:'.(date('Y') + 1),
             'page' => 'nullable|integer|min:1',
-            'entries' => 'nullable|integer|min:1|max:100',
+            'entries' => 'nullable|integer|min:1|max:150',
         ])->validate();
 
         return array_merge([
