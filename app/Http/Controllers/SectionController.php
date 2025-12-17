@@ -17,4 +17,22 @@ class SectionController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
+
+    public function sections()
+    {
+        try {
+            $branchId = auth('api')->user()->librarian->section->branch->id;
+            $sections = Section::where('branch_id', $branchId)->get();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $sections,
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
 }

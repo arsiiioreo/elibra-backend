@@ -85,6 +85,7 @@ Route::group(['prefix' => '/branch', 'middleware' => ['jwt.auth', 'role:0,1']], 
 });
 
 Route::group(['prefix' => '/sections'], function () {
+    Route::get('', [SectionController::class, 'sections']);
     Route::get('/{branch}', [SectionController::class, 'index']);
 });
 
